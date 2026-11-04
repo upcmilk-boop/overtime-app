@@ -21,7 +21,6 @@ header.top{position:sticky;top:12px;z-index:10;display:flex;align-items:center;j
 .brand h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.5px}
 .brand h1 span{color:var(--teal)}
 .brand small{color:var(--muted);font-size:13px}
-/* পিলটিকে ক্লিকেবল বাটনের মতো ডিজাইন করা হয়েছে */
 .pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:#3d4b49;background:#f7faf9;max-width:440px;cursor:pointer;transition:0.2s;}
 .pill:hover{background:#fff;border-color:var(--teal);box-shadow:0 2px 8px rgba(20,60,55,.1);}
 .dot{width:8px;height:8px;border-radius:50%;background:#7a8a87;flex:none}
@@ -55,7 +54,10 @@ details.card summary::-webkit-details-marker{display:none}
 details.card summary::after{content:"+"}details[open].card summary::after{content:"−"}
 .field{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .field label{font-size:13px;font-weight:600;color:#3d4b49}
-.field input,.field select{font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#f5f8f7;width:100%}
+.field input:not([type="checkbox"]),.field select{font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#f5f8f7;width:100%}
+.field-check{display:flex;align-items:center;gap:8px;margin-top:12px;background:#f5f8f7;padding:10px;border-radius:12px;border:1px solid var(--line)}
+.field-check input{width:18px;height:18px;accent-color:var(--teal)}
+.field-check label{font-size:14px;font-weight:600;margin:0;cursor:pointer}
 .main{padding:0;overflow:hidden}
 .monthbar{display:flex;align-items:center;gap:8px;padding:14px}
 .monthbar h2{flex:1;text-align:center;margin:0;font-size:20px}
@@ -90,7 +92,6 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
     <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
     <div><h1>Overtime <span>Calculator</span></h1><small id="dutyLbl"></small></div>
   </div>
-  <!-- এখানে ক্লিক করলে সেটিংস ওপেন হবে -->
   <div class="pill" id="pill" onclick="openSettings()"><span class="dot"></span><span id="pillTxt"></span></div>
 </header>
 
@@ -123,7 +124,7 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
         <button class="btn primary" id="xlsBtn">↓ Excel</button>
         <button class="btn" id="pdfBtn">↓ PDF</button>
       </div>
-      <p class="note">Entries save in this browser and sync to your Google Sheet. Excel and PDF need an internet connection the first time the page opens.</p>
+      <p class="note">Entries save in this browser and sync to your Google Sheet.</p>
     </div>
 
     <details class="card" id="settingsBox">
@@ -137,6 +138,17 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
         <div class="field"><label>Duty start</label><input type="time" id="s_start"></div>
         <div class="field"><label>Duty end</label><input type="time" id="s_end"></div>
       </div>
+      
+      <!-- Ramadan Mode Settings -->
+      <div class="field-check">
+        <input type="checkbox" id="s_isRamadan">
+        <label for="s_isRamadan">Ramadan / Fasting Month Mode</label>
+      </div>
+      <div class="field" id="ramadanEndWrapper" style="display:none;">
+        <label>Ramadan Duty End (e.g. 3:00 PM)</label>
+        <input type="time" id="s_ramadanEnd">
+      </div>
+
       <div class="row2">
         <div class="field"><label>Weekly off</label>
           <select id="s_offDay">
@@ -158,9 +170,8 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
       </div>
       <div class="field"><label>Snack allowance when you leave at or after</label><input type="time" id="s_snackTime"></div>
       
-      <div class="field"><label>Google sync key (your private password)</label><input id="s_key" placeholder="e.g. karim-2026-xyz"></div>
+      <div class="field"><label>Google sync key (your password)</label><input id="s_key" placeholder="e.g. karim-2026-xyz"></div>
       <button class="btn primary" id="syncNow" style="width:100%;margin-top:12px">Sync now</button>
-      <p class="note">Use your private sync key (password) to access your data on any device. Keep it secret.</p>
     </details>
   </aside>
 
@@ -195,9 +206,9 @@ const LS = { s:'ot_settings', e:'ot_entries', p:'ot_pending', d:'ot_settings_dir
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const FULLDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const DEF = { name:'', empId:'', dept:'', start:'08:00', end:'17:00', offDay:'5', rounding:'exact',
-              rate:'', snack:'17', snackTime:'18:00', url:DEFAULT_SCRIPT_URL, key:'' };
+              rate:'', snack:'17', snackTime:'18:00', isRamadan: 'false', ramadanEnd: '15:00', url:DEFAULT_SCRIPT_URL, key:'' };
 const FIELDS = Object.keys(DEF);
-const CALC_FIELDS = ['start','end','offDay','rounding','snack','snackTime'];
+const CALC_FIELDS = ['start','end','offDay','rounding','snack','snackTime', 'isRamadan', 'ramadanEnd'];
 
 const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
 let S = { ...DEF, ...load(LS.s, {}) };
@@ -225,14 +236,32 @@ const fmtHM = m => { const h = Math.floor(m / 60), mi = Math.round(m % 60); retu
 
 let view = new Date(); view.setDate(1);
 
-function parseOut(str) {
+// 💡 নতুন আপডেট: রাত ১২টা এবং তার পরের সময়গুলো সঠিকভাবে ডিটেক্ট করার লজিক
+function parseOut(str, isRmd) {
   str = String(str).trim().replace(':', '.');
   const m = str.match(/^(\d{1,2})(?:\.(\d{1,2}))?$/);
   if (!m) return NaN;
   let h = +m[1];
   const mi = m[2] ? +(m[2].length === 1 ? m[2] + '0' : m[2]) : 0;
   if (mi > 59 || h > 29) return NaN;
-  if (h === 0) h = 24; else if (h < 12) h += 12;
+
+  // যদি রমজান মোড চালু থাকে এবং কেউ ৩টা বা ৪টা লিখে, তবে সেটা বিকাল হিসেবে ধরা হবে
+  if (isRmd && h >= 3 && h <= 4) {
+      h += 12; 
+  } 
+  // ১২ টা বা ০ টা লিখলে সেটা রাত ১২:০০ (অর্থাৎ ২৪:০০) ধরা হবে
+  else if (h === 0 || h === 12) {
+      h = 24; 
+  } 
+  // ১ থেকে ৪ লিখলে সেটা পরদিনের রাত ১টা থেকে ৪টা ধরা হবে (২৫:০০ - ২৮:০০)
+  else if (h >= 1 && h <= 4) {
+      h += 24; 
+  } 
+  // ৫ থেকে ১১ লিখলে সেটা বিকাল/সন্ধ্যা ৫টা থেকে ১১টা ধরা হবে (১৭:০০ - ২৩:০০)
+  else if (h >= 5 && h <= 11) {
+      h += 12; 
+  }
+  
   return h * 60 + mi;
 }
 
@@ -248,10 +277,17 @@ function roundMin(m) {
 function calc(date) {
   const raw = (E[date] || '').trim();
   if (!raw) return { empty: true };
-  const out = parseOut(raw);
+  
+  const isRmd = S.isRamadan === 'true';
+  const out = parseOut(raw, isRmd);
   if (isNaN(out)) return { bad: true };
+  
   const off = new Date(date + 'T00:00:00').getDay() === +S.offDay;
-  const base = off ? toMin(S.start) : toMin(S.end);
+  
+  // রমজান মোড অন থাকলে ডিউটি শেষের সময় বদলে যাবে
+  const activeDutyEnd = isRmd ? S.ramadanEnd : S.end;
+  const base = off ? toMin(S.start) : toMin(activeDutyEnd);
+  
   return { ot: roundMin(Math.max(0, out - base)), snack: out >= toMin(S.snackTime) ? (+S.snack || 0) : 0 };
 }
 
@@ -266,17 +302,26 @@ function monthData() {
 
 function helpText() {
   const off = +S.offDay;
+  const isRmd = S.isRamadan === 'true';
+  const activeEnd = isRmd ? S.ramadanEnd : S.end;
   const ex = +((20 * 60 - toMin(S.start)) / 60).toFixed(2);
-  return 'Type the time you left. 6.30 means 6:30 PM. After midnight, type 0.30. ' +
-    (off >= 0 ? `On ${FULLDAYS[off]} (weekly off) every hour from duty start counts as overtime, so 8.00 means ${ex} hours. ` : '') +
-    'Press Enter to jump to the next day.';
+  
+  let text = `Type the time you left. 6.30 means 6:30 PM. Type 12.30 for after midnight. `;
+  if(isRmd) text += `(Ramadan Mode Active: Duty ends at ${fmt12(S.ramadanEnd)}). `;
+  
+  text += (off >= 0 ? `On ${FULLDAYS[off]} (weekly off) every hour from duty start counts as overtime. ` : '') + `Press Enter to jump to the next day.`;
+  return text;
 }
 
 function render() {
   const mName = view.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   $('monthLbl').textContent = mName;
   $('heroLbl').textContent = 'Total overtime · ' + mName;
-  $('dutyLbl').textContent = `Duty ${fmt12(S.start)} – ${fmt12(S.end)}`;
+  
+  const isRmd = S.isRamadan === 'true';
+  const activeEnd = isRmd ? S.ramadanEnd : S.end;
+  $('dutyLbl').textContent = `Duty ${fmt12(S.start)} – ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`;
+  
   $('snTime').textContent = fmt12(S.snackTime);
   $('help').textContent = helpText();
 
@@ -343,24 +388,40 @@ $('tbody').addEventListener('keydown', e => {
   if (next) { const i = next.querySelector('input'); i.focus(); i.select(); }
 });
 
-function fillSettings() { FIELDS.forEach(f => { 
+function fillSettings() { 
+  FIELDS.forEach(f => { 
     const el = $('s_' + f);
-    if (el) el.value = S[f] ?? ''; 
-}); }
+    if (!el) return;
+    if (el.type === 'checkbox') el.checked = (S[f] === 'true');
+    else el.value = S[f] ?? ''; 
+  }); 
+  toggleRamadanUI();
+}
+
+function toggleRamadanUI() {
+  const isChecked = $('s_isRamadan').checked;
+  $('ramadanEndWrapper').style.display = isChecked ? 'flex' : 'none';
+}
 
 FIELDS.forEach(f => {
   const el = $('s_' + f);
   if (!el) return;
   el.addEventListener('change', ev => {
-    S[f] = ev.target.value.trim();
+    if (el.type === 'checkbox') {
+      S[f] = el.checked ? 'true' : 'false';
+    } else {
+      S[f] = ev.target.value.trim();
+    }
+
     if (f === 'key') { saveLocal(); pullSync(); return; }
+    if (f === 'isRamadan') toggleRamadanUI();
+
     settingsDirty = true; settingsVer++;
     if (CALC_FIELDS.includes(f)) Object.keys(E).forEach(k => P[k] = 1);
     saveLocal(); render(); scheduleSync();
   });
 });
 
-// পিল-এ ক্লিক করলে সেটিংস ওপেন হওয়ার ফাংশন
 window.openSettings = function() {
     const box = document.getElementById('settingsBox');
     box.open = true;
@@ -469,9 +530,13 @@ function reportRows(md) {
 $('xlsBtn').onclick = () => {
   if (!window.XLSX) return alert('Excel library not loaded. Check your internet and reload.');
   const T = totals(), mName = $('monthLbl').textContent;
+  
+  const isRmd = S.isRamadan === 'true';
+  const activeEnd = isRmd ? S.ramadanEnd : S.end;
+  
   const rows = [
     ['Overtime Report', mName], ['Name', S.name], ['Employee ID', S.empId], ['Department', S.dept],
-    ['Duty', `${fmt12(S.start)} - ${fmt12(S.end)}`], [],
+    ['Duty', `${fmt12(S.start)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`], [],
     ['Date', 'Day', 'Time out', 'Overtime (h)', 'Overtime', 'Snack (SR)'],
     ...reportRows(T.md), [],
     ['Total', '', '', +(T.tot / 60).toFixed(2), fmtHM(T.tot), T.snTot]
@@ -485,11 +550,15 @@ $('xlsBtn').onclick = () => {
 $('pdfBtn').onclick = () => {
   if (!window.jspdf) return alert('PDF library not loaded. Check your internet and reload.');
   const T = totals(), mName = $('monthLbl').textContent;
+  
+  const isRmd = S.isRamadan === 'true';
+  const activeEnd = isRmd ? S.ramadanEnd : S.end;
+  
   const doc = new window.jspdf.jsPDF();
   doc.setFontSize(16); doc.text('Overtime Report - ' + mName, 14, 16);
   doc.setFontSize(10);
   doc.text(`Name: ${S.name || '-'}    ID: ${S.empId || '-'}    Dept: ${S.dept || '-'}`, 14, 24);
-  doc.text(`Duty: ${fmt12(S.start)} - ${fmt12(S.end)}    Total OT: ${fmtH(T.tot)} h (${fmtHM(T.tot)})    Snack: ${T.snTot} SR` +
+  doc.text(`Duty: ${fmt12(S.start)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}    Total OT: ${fmtH(T.tot)} h (${fmtHM(T.tot)})    Snack: ${T.snTot} SR` +
            (T.pay ? `    OT pay: ${T.pay} SR` : ''), 14, 30);
   doc.autoTable({
     startY: 36, head: [['Date', 'Day', 'Time out', 'OT (h)', 'OT', 'Snack (SR)']],
