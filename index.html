@@ -747,7 +747,8 @@ details.card>summary:hover{background:var(--surface-2);border-radius:var(--r)}
   }
 
   /* Sync: private copy in your Google Sheet, through your Apps Script link */
-  function gsUrl() { try { return (localStorage.getItem('ot-gs-url') || '').trim(); } catch (e) { return ''; } }
+  var DEFAULT_GS = "https://script.google.com/macros/s/AKfycbzWEKGhH55v-JPiGpl99vSOrJPj4w5TQUVhRN2FhCOihTJJaY5FCVRsJzginiGZkxJ3XQ/exec";
+  function gsUrl() { try { return (localStorage.getItem('ot-gs-url') || '').trim() || DEFAULT_GS; } catch (e) { return DEFAULT_GS; } }
   var SETTING_FIELDS = { fName: 'name', fId: 'id', fDept: 'dept', fStart: 'start', fEnd: 'end', fMode: 'mode', fRate: 'rate', fSnack: 'snack', fSnackAfter: 'snackAfter' };
   var sync = { on: false, busy: false, again: false, timer: null };
   function setSync(state, text) { var el = $('sync'); el.dataset.s = state; el.textContent = text; }
@@ -818,7 +819,7 @@ details.card>summary:hover{background:var(--surface-2);border-radius:var(--r)}
   }
   function initSync() {
     var fs = $('fSync'), fg = $('fGs'); fs.value = syncKey(); fg.value = gsUrl();
-    var NEED = 'Add your Google script link and sync key in Settings to back up';
+    var NEED = 'Add your sync key in Settings to back up to Google';
     function start() { sync.on = false; if (syncKey() && gsUrl()) pull(); else setSync('local', NEED); }
     fs.addEventListener('change', function () { try { localStorage.setItem('ot-sync-key', fs.value.trim()); } catch (e) {} start(); });
     fg.addEventListener('change', function () { try { localStorage.setItem('ot-gs-url', fg.value.trim()); } catch (e) {} start(); });
