@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overtime Pro - Ultra Premium Edition</title>
+    <title>Overtime Pro - Live Cloud Edition</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,10 +12,10 @@
             theme: {
                 extend: {
                     colors: {
-                        darkBg: '#0b0f19',
-                        cardBg: '#151c2c',
-                        cardBorder: '#1e293b',
-                        inputBg: '#0f172a',
+                        darkBg: '#1e293b',      /* Medium Slate Background */
+                        cardBg: '#334155',      /* Soft Slate Card Background */
+                        cardBorder: '#475569',
+                        inputBg: '#1e293b',
                         primary: '#3b82f6',
                         accent: '#10b981',
                         gold: '#f59e0b'
@@ -28,50 +28,80 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0b0f19;
+            background-color: #1e293b;
+            color: #f1f5f9;
         }
         .glass-card {
-            background: rgba(21, 28, 44, 0.75);
+            background: rgba(51, 65, 85, 0.85);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
         input[type="time"]::-webkit-calendar-picker-indicator {
             filter: invert(0.8);
         }
+
+        /* Print Optimization: Print only report and summary, hide buttons/forms */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            header, .no-print, form, #statusBar {
+                display: none !important;
+            }
+            .glass-card {
+                background: #ffffff !important;
+                border: none !important;
+                box-shadow: none !important;
+                color: #000000 !important;
+            }
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+            th, td {
+                border: 1px solid #cbd5e1 !important;
+                color: #000000 !important;
+                padding: 8px !important;
+            }
+            th {
+                background-color: #f1f5f9 !important;
+            }
+        }
     </style>
 </head>
-<body class="text-slate-100 min-h-screen p-4 md:p-8">
+<body class="min-h-screen p-4 md:p-8">
 
     <div class="max-w-6xl mx-auto space-y-6">
         
         <!-- Header -->
-        <header class="glass-card p-6 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4 border border-slate-800">
-            <div class="flex items-center space-x-4 rtl:space-x-reverse">
+        <header class="glass-card p-6 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-4">
                 <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-3.5 rounded-2xl shadow-lg shadow-blue-500/30">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                        Overtime Pro <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">ULTRA</span>
+                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-300 bg-clip-text text-transparent">
+                        Overtime Pro <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LIVE CLOUD</span>
                     </h1>
-                    <p class="text-xs text-slate-400 mt-0.5">Smart Overtime & Food Allowance Auto-Calculator</p>
+                    <p class="text-xs text-slate-300 mt-0.5">Centralized Real-Time Overtime & Food Allowance Tracker</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap gap-3">
-                <button onclick="openSyncModal()" class="flex items-center space-x-2 bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/40 px-4 py-2.5 rounded-2xl text-xs font-medium transition shadow-lg">
+                <button onclick="syncFromCloud()" class="flex items-center space-x-2 bg-indigo-600/40 hover:bg-indigo-600 text-indigo-100 border border-indigo-400/40 px-4 py-2.5 rounded-2xl text-xs font-medium transition shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
-                    <span>Cloud Sync Setup</span>
+                    <span>Refresh Sync</span>
                 </button>
-                <button onclick="window.print()" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-2xl text-xs font-medium transition border border-slate-700">
+                <button onclick="window.print()" class="flex items-center space-x-2 bg-slate-700 hover:bg-slate-600 text-slate-100 px-4 py-2.5 rounded-2xl text-xs font-medium transition border border-slate-600">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
-                    <span>Print / PDF</span>
+                    <span>Print / PDF Report</span>
                 </button>
                 <button onclick="exportCSV()" class="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-2xl text-xs transition shadow-lg shadow-emerald-500/20">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,28 +112,28 @@
             </div>
         </header>
 
-        <!-- Status Indicator -->
-        <div id="statusBar" class="glass-card px-5 py-3 rounded-2xl text-xs text-slate-400 flex items-center justify-between">
+        <!-- Live Status Bar -->
+        <div id="statusBar" class="glass-card px-5 py-3 rounded-2xl text-xs text-slate-300 flex items-center justify-between">
             <div class="flex items-center space-x-2.5">
-                <span id="syncIndicator" class="h-2.5 w-2.5 rounded-full bg-amber-500 inline-block shadow-lg shadow-amber-500/50"></span>
-                <span id="syncStatusText" class="font-medium text-slate-300">Storage Mode: Local / Offline (Setup Cloud Sync for multi-device auto-sync)</span>
+                <span id="syncIndicator" class="h-2.5 w-2.5 rounded-full bg-emerald-400 inline-block shadow-lg shadow-emerald-500/50 animate-pulse"></span>
+                <span id="syncStatusText" class="font-medium text-slate-100">Central Live Cloud Server Connected</span>
             </div>
-            <span id="lastSyncTime" class="text-slate-500 text-[11px]"></span>
+            <span id="lastSyncTime" class="text-slate-300 text-[11px]">Syncing...</span>
         </div>
 
         <!-- Info Highlights -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="glass-card p-4 rounded-2xl border border-slate-800">
-                <div class="text-slate-400 text-xs font-medium mb-1">Standard Duty Hours</div>
-                <div class="text-base font-bold text-slate-200">08:00 AM - 05:00 PM</div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-700">
+                <div class="text-slate-300 text-xs font-medium mb-1">Standard Duty Hours</div>
+                <div class="text-base font-bold text-white">08:00 AM - 05:00 PM</div>
             </div>
-            <div class="glass-card p-4 rounded-2xl border border-slate-800">
-                <div class="text-slate-400 text-xs font-medium mb-1">Overtime Rate</div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-700">
+                <div class="text-slate-300 text-xs font-medium mb-1">Overtime Rate</div>
                 <div class="text-base font-bold text-emerald-400">10.62 SAR / hour</div>
             </div>
-            <div class="glass-card p-4 rounded-2xl border border-slate-800">
-                <div class="text-slate-400 text-xs font-medium mb-1">Food Allowance</div>
-                <div class="text-base font-bold text-amber-400">17 SAR <span class="text-xs text-slate-400 font-normal">(If OT > 0)</span></div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-700">
+                <div class="text-slate-300 text-xs font-medium mb-1">Food Allowance</div>
+                <div class="text-base font-bold text-amber-400">17 SAR <span class="text-xs text-slate-300 font-normal">(If OT > 0)</span></div>
             </div>
         </div>
 
@@ -111,9 +141,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <!-- Input Form -->
-            <div class="lg:col-span-5 glass-card p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
-                <h2 class="text-base font-bold flex items-center space-x-2 text-slate-200">
-                    <span class="bg-blue-600/30 text-blue-400 p-1.5 rounded-xl border border-blue-500/30 text-xs">✍️</span>
+            <div class="lg:col-span-5 glass-card p-6 rounded-3xl border border-slate-700 shadow-xl space-y-5">
+                <h2 class="text-base font-bold flex items-center space-x-2 text-white">
+                    <span class="bg-blue-600/40 text-blue-300 p-1.5 rounded-xl border border-blue-500/30 text-xs">✍️</span>
                     <span>Add New Overtime Record</span>
                 </h2>
 
@@ -121,44 +151,44 @@
                     <input type="hidden" id="editIndex" value="-1">
                     
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Select Date</label>
+                        <label class="block text-xs font-medium text-slate-200 mb-1.5">Select Date</label>
                         <input type="date" id="otDate" required onchange="handleDateChange()" 
-                            class="w-full bg-slate-900 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition shadow-inner">
+                            class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-400 transition shadow-inner">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Day Type:</label>
-                        <div id="dayTypeBadge" class="inline-block text-xs px-3 py-1.5 rounded-xl font-medium bg-slate-800 text-slate-300 border border-slate-700">Select Date</div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Day Type:</label>
+                        <div id="dayTypeBadge" class="inline-block text-xs px-3 py-1.5 rounded-xl font-medium bg-slate-700 text-slate-200 border border-slate-600">Select Date</div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1.5">Leaving Time</label>
+                        <label class="block text-xs font-medium text-slate-200 mb-1.5">Leaving Time</label>
                         <input type="time" id="leavingTime" required oninput="calculateLivePreview()" 
-                            class="w-full bg-slate-900 border border-slate-700/80 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition shadow-inner">
-                        <p class="text-[11px] text-slate-500 mt-1">Sun-Thu: OT starts after 17:00. Friday: Full-day OT from 08:00 AM.</p>
+                            class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-400 transition shadow-inner">
+                        <p class="text-[11px] text-slate-400 mt-1">Sun-Thu: OT starts after 17:00. Friday: Full-day OT from 08:00 AM.</p>
                     </div>
 
                     <!-- Live Calculation Card -->
-                    <div class="bg-gradient-to-br from-slate-900/90 to-slate-900/50 border border-slate-800 p-4 rounded-2xl space-y-2.5">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">LIVE PREVIEW</div>
+                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl space-y-2.5">
+                        <div class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">LIVE PREVIEW</div>
                         <div class="flex justify-between text-xs">
-                            <span class="text-slate-400">Overtime Duration:</span>
-                            <span id="previewOtTime" class="font-bold text-slate-100">0 Hours 0 Mins</span>
+                            <span class="text-slate-300">Overtime Duration:</span>
+                            <span id="previewOtTime" class="font-bold text-white">0 Hours 0 Mins</span>
                         </div>
                         <div class="flex justify-between text-xs">
-                            <span class="text-slate-400">Overtime Payment:</span>
+                            <span class="text-slate-300">Overtime Payment:</span>
                             <span id="previewOtPay" class="font-bold text-emerald-400">0.00 SAR</span>
                         </div>
                         <div class="flex justify-between text-xs">
-                            <span class="text-slate-400">Food Allowance:</span>
+                            <span class="text-slate-300">Food Allowance:</span>
                             <span id="previewFood" class="font-bold text-amber-400">0 SAR</span>
                         </div>
                     </div>
 
                     <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3.5 rounded-2xl transition shadow-lg shadow-blue-600/25">
-                        Save Record
+                        Save & Cloud Sync
                     </button>
-                    <button type="button" id="cancelEditBtn" onclick="resetForm()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2.5 rounded-2xl transition hidden border border-slate-700">
+                    <button type="button" id="cancelEditBtn" onclick="resetForm()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2.5 rounded-2xl transition hidden border border-slate-600">
                         Cancel
                     </button>
                 </form>
@@ -168,57 +198,57 @@
             <div class="lg:col-span-7 space-y-6">
                 
                 <!-- Monthly Cards -->
-                <div class="glass-card p-6 rounded-3xl border border-slate-800 shadow-xl space-y-4">
+                <div class="glass-card p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Monthly Filter:</h3>
-                        <div class="flex items-center gap-2 w-full sm:w-auto">
-                            <input type="month" id="filterMonth" onchange="renderTable()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500">
-                            <button onclick="clearFilter()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs transition border border-slate-700">All Months</button>
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Monthly Filter:</h3>
+                        <div class="flex items-center gap-2 w-full sm:w-auto no-print">
+                            <input type="month" id="filterMonth" onchange="renderTable()" class="bg-slate-800 border border-slate-600 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-400">
+                            <button onclick="clearFilter()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-xl text-xs transition border border-slate-600">All Months</button>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
-                            <div class="text-slate-400 text-xs mb-1">Total OT Hours</div>
-                            <div id="totalOtHours" class="text-lg font-bold text-slate-100">0h 0m</div>
-                            <div id="totalOtDecimal" class="text-[10px] text-slate-500 mt-0.5">0.00 Hours (Decimal)</div>
+                        <div class="bg-slate-800/70 p-4 rounded-2xl border border-slate-700">
+                            <div class="text-slate-300 text-xs mb-1">Total OT Hours</div>
+                            <div id="totalOtHours" class="text-lg font-bold text-white">0h 0m</div>
+                            <div id="totalOtDecimal" class="text-[10px] text-slate-400 mt-0.5">0.00 Hours (Decimal)</div>
                         </div>
-                        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
-                            <div class="text-slate-400 text-xs mb-1">Total OT Payment</div>
+                        <div class="bg-slate-800/70 p-4 rounded-2xl border border-slate-700">
+                            <div class="text-slate-300 text-xs mb-1">Total OT Payment</div>
                             <div id="totalOtPay" class="text-lg font-bold text-emerald-400">0.00 SAR</div>
-                            <div class="text-[10px] text-slate-500 mt-0.5">Rate: 10.62 SAR / hr</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">Rate: 10.62 SAR / hr</div>
                         </div>
-                        <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
-                            <div class="text-slate-400 text-xs mb-1">Total Food Allowance</div>
+                        <div class="bg-slate-800/70 p-4 rounded-2xl border border-slate-700">
+                            <div class="text-slate-300 text-xs mb-1">Total Food Allowance</div>
                             <div id="totalFood" class="text-lg font-bold text-amber-400">0.00 SAR</div>
-                            <div class="text-[10px] text-slate-500 mt-0.5">17 SAR per OT day</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">17 SAR per OT day</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Table -->
-                <div class="glass-card p-6 rounded-3xl border border-slate-800 shadow-xl space-y-4">
+                <div class="glass-card p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-sm font-bold flex items-center space-x-2 text-slate-200">
+                        <h3 class="text-sm font-bold flex items-center space-x-2 text-white">
                             <span>📋</span>
-                            <span>Overtime History</span>
+                            <span>Live Overtime History</span>
                         </h3>
-                        <span id="recordCountBadge" class="text-xs bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-slate-400">0 Records</span>
+                        <span id="recordCountBadge" class="text-xs bg-slate-700 border border-slate-600 px-3 py-1 rounded-full text-slate-200">0 Records</span>
                     </div>
 
                     <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b border-slate-800 text-xs text-slate-400 sticky top-0 bg-cardBg z-10">
+                                <tr class="border-b border-slate-700 text-xs text-slate-300 sticky top-0 bg-slate-700 z-10">
                                     <th class="py-3 px-3">Date & Day</th>
                                     <th class="py-3 px-3">Leaving Time</th>
                                     <th class="py-3 px-3">OT Hours</th>
                                     <th class="py-3 px-3">OT Payment</th>
                                     <th class="py-3 px-3">Food Allowance</th>
-                                    <th class="py-3 px-3 text-right">Actions</th>
+                                    <th class="py-3 px-3 text-right no-print">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="otTableBody" class="divide-y divide-slate-800/40 text-xs">
+                            <tbody id="otTableBody" class="divide-y divide-slate-700/60 text-xs">
                             </tbody>
                         </table>
                     </div>
@@ -228,48 +258,19 @@
         </div>
     </div>
 
-    <!-- Sync Modal -->
-    <div id="syncModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-card border border-slate-700 w-full max-w-lg rounded-3xl p-6 space-y-5 shadow-2xl">
-            <div class="flex justify-between items-center">
-                <h3 class="text-base font-bold text-slate-100">☁️ Google Sheets Cloud Sync Setup</h3>
-                <button onclick="closeSyncModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
-            </div>
-            
-            <p class="text-xs text-slate-300 leading-relaxed">
-                Paste your Google Apps Script Web App URL below to sync data seamlessly between mobile and PC:
-            </p>
-
-            <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">Google Web App URL</label>
-                <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" 
-                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div class="flex justify-end gap-3 pt-2">
-                <button onclick="closeSyncModal()" class="px-4 py-2 bg-slate-800 rounded-xl text-xs transition">Cancel</button>
-                <button onclick="saveScriptUrl()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-medium transition">Save & Sync</button>
-            </div>
-        </div>
-    </div>
-
     <!-- JS Logic -->
     <script>
+        const HARDCODED_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuP8ikA7mkC_m4yKBcbpjT_yjYlgw7sO80Pt9zF1bFs8guWnX0zjMftIZefLCYCds2/exec";
         const OT_RATE = 10.62;
         const FOOD_ALLOWANCE = 17;
         let records = [];
-        let scriptUrl = localStorage.getItem('ot_script_url') || '';
 
         const daysInEnglish = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
         window.onload = function() {
             document.getElementById('otDate').valueAsDate = new Date();
             handleDateChange();
-            loadRecords();
-            if(scriptUrl) {
-                document.getElementById('scriptUrlInput').value = scriptUrl;
-                syncFromCloud();
-            }
+            syncFromCloud();
         };
 
         function handleDateChange() {
@@ -281,10 +282,10 @@
             const badge = document.getElementById('dayTypeBadge');
             if(dayIndex === 5) { // Friday
                 badge.innerText = "Friday (Full-day OT from 08:00 AM)";
-                badge.className = "inline-block text-xs px-3 py-1.5 rounded-xl font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                badge.className = "inline-block text-xs px-3 py-1.5 rounded-xl font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
             } else {
                 badge.innerText = `${daysInEnglish[dayIndex]} (OT after 17:00)`;
-                badge.className = "inline-block text-xs px-3 py-1.5 rounded-xl font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30";
+                badge.className = "inline-block text-xs px-3 py-1.5 rounded-xl font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30";
             }
             calculateLivePreview();
         }
@@ -301,12 +302,12 @@
 
             let otMins = 0;
 
-            if(dayIndex === 5) { // Friday: full day from 08:00 (480 mins)
+            if(dayIndex === 5) { // Friday
                 const startMins = 8 * 60;
                 if(leaveTotalMins > startMins) {
                     otMins = leaveTotalMins - startMins;
                 }
-            } else { // Sun to Thu: after 17:00 (1020 mins)
+            } else { // Sun to Thu
                 const startMins = 17 * 60;
                 if(leaveTotalMins > startMins) {
                     otMins = leaveTotalMins - startMins;
@@ -333,7 +334,7 @@
             document.getElementById('previewFood').innerText = res.food + " SAR";
         }
 
-        function handleFormSubmit(e) {
+        async function handleFormSubmit(e) {
             e.preventDefault();
             const editIndex = parseInt(document.getElementById('editIndex').value);
             const date = document.getElementById('otDate').value;
@@ -356,15 +357,16 @@
                 records.push(recordData);
             }
 
-            saveAndSync();
+            renderTable();
             resetForm();
+            await syncToCloud();
         }
 
         function resetForm() {
             document.getElementById('otForm').reset();
             document.getElementById('editIndex').value = "-1";
             document.getElementById('otDate').valueAsDate = new Date();
-            document.getElementById('submitBtn').innerText = "Save Record";
+            document.getElementById('submitBtn').innerText = "Save & Cloud Sync";
             document.getElementById('cancelEditBtn').classList.add('hidden');
             handleDateChange();
         }
@@ -374,33 +376,18 @@
             document.getElementById('editIndex').value = index;
             document.getElementById('otDate').value = r.date;
             document.getElementById('leavingTime').value = r.leavingTime;
-            document.getElementById('submitBtn').innerText = "Update Record";
+            document.getElementById('submitBtn').innerText = "Update & Sync";
             document.getElementById('cancelEditBtn').classList.remove('hidden');
             handleDateChange();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function deleteRecord(index) {
+        async function deleteRecord(index) {
             if(confirm('Are you sure you want to delete this record?')) {
                 records.splice(index, 1);
-                saveAndSync();
+                renderTable();
+                await syncToCloud();
             }
-        }
-
-        function saveAndSync() {
-            localStorage.setItem('ot_records', JSON.stringify(records));
-            renderTable();
-            if(scriptUrl) {
-                syncToCloud();
-            }
-        }
-
-        function loadRecords() {
-            const saved = localStorage.getItem('ot_records');
-            if(saved) {
-                records = JSON.parse(saved);
-            }
-            renderTable();
         }
 
         function renderTable() {
@@ -430,19 +417,19 @@
                 const mins = r.otHours % 60;
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-800/30 transition";
+                tr.className = "hover:bg-slate-700/40 transition";
                 tr.innerHTML = `
                     <td class="py-3 px-3">
-                        <div class="font-semibold text-slate-200">${r.date}</div>
-                        <div class="text-[11px] text-slate-400">${dayName}</div>
+                        <div class="font-semibold text-white">${r.date}</div>
+                        <div class="text-[11px] text-slate-300">${dayName}</div>
                     </td>
-                    <td class="py-3 px-3 font-mono font-medium text-slate-300">${r.leavingTime}</td>
-                    <td class="py-3 px-3 font-medium text-slate-200">${hrs}h ${mins}m</td>
+                    <td class="py-3 px-3 font-mono font-medium text-slate-200">${r.leavingTime}</td>
+                    <td class="py-3 px-3 font-medium text-white">${hrs}h ${mins}m</td>
                     <td class="py-3 px-3 font-semibold text-emerald-400">${r.otPay.toFixed(2)} SAR</td>
                     <td class="py-3 px-3 font-semibold text-amber-400">${r.food} SAR</td>
-                    <td class="py-3 px-3 text-right space-x-2">
-                        <button onclick="editRecord(${records.indexOf(r)})" class="text-[11px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-lg hover:bg-blue-500/30">Edit</button>
-                        <button onclick="deleteRecord(${records.indexOf(r)})" class="text-[11px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-lg hover:bg-red-500/30">Delete</button>
+                    <td class="py-3 px-3 text-right space-x-2 no-print">
+                        <button onclick="editRecord(${records.indexOf(r)})" class="text-[11px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-lg hover:bg-blue-500/30">Edit</button>
+                        <button onclick="deleteRecord(${records.indexOf(r)})" class="text-[11px] bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-lg hover:bg-red-500/30">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -477,66 +464,37 @@
             a.click();
         }
 
-        function openSyncModal() { document.getElementById('syncModal').classList.remove('hidden'); }
-        function closeSyncModal() { document.getElementById('syncModal').classList.add('hidden'); }
-
-        function saveScriptUrl() {
-            const url = document.getElementById('scriptUrlInput').value.trim();
-            scriptUrl = url;
-            localStorage.setItem('ot_script_url', url);
-            closeSyncModal();
-            if(url) {
-                syncToCloud();
-            } else {
-                updateSyncStatus('local');
-            }
-        }
-
-        function updateSyncStatus(mode, timeStr = '') {
-            const indicator = document.getElementById('syncIndicator');
-            const statusText = document.getElementById('syncStatusText');
-            const timeText = document.getElementById('lastSyncTime');
-
-            if(mode === 'cloud') {
-                indicator.className = "h-2.5 w-2.5 rounded-full bg-emerald-400 inline-block shadow-lg shadow-emerald-500/50 animate-pulse";
-                statusText.innerText = "Cloud Sync (Active): Real-time sync with mobile & PC";
-                timeText.innerText = timeStr ? `Last Sync: ${timeStr}` : '';
-            } else {
-                indicator.className = "h-2.5 w-2.5 rounded-full bg-amber-500 inline-block shadow-lg shadow-amber-500/50";
-                statusText.innerText = 'Storage Mode: Local / Offline (Setup Cloud Sync for auto-sync)';
-                timeText.innerText = '';
-            }
-        }
-
         async function syncToCloud() {
-            if(!scriptUrl) return;
+            const timeText = document.getElementById('lastSyncTime');
+            timeText.innerText = "Syncing to Cloud...";
             try {
-                await fetch(scriptUrl, {
+                await fetch(HARDCODED_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(records)
                 });
-                updateSyncStatus('cloud', new Date().toLocaleTimeString());
+                timeText.innerText = `Last Saved: ${new Date().toLocaleTimeString()}`;
             } catch (e) {
                 console.error("Cloud sync error", e);
+                timeText.innerText = "Sync Failed";
             }
         }
 
         async function syncFromCloud() {
-            if(!scriptUrl) return;
+            const timeText = document.getElementById('lastSyncTime');
+            timeText.innerText = "Fetching from Cloud...";
             try {
-                const res = await fetch(scriptUrl);
+                const res = await fetch(HARDCODED_SCRIPT_URL);
                 const data = await res.json();
-                if(Array.isArray(data) && data.length > 0) {
+                if(Array.isArray(data)) {
                     records = data;
-                    localStorage.setItem('ot_records', JSON.stringify(records));
                     renderTable();
                 }
-                updateSyncStatus('cloud', new Date().toLocaleTimeString());
+                timeText.innerText = `Last Updated: ${new Date().toLocaleTimeString()}`;
             } catch(e) {
                 console.error("Fetch from cloud error", e);
-                updateSyncStatus('local');
+                timeText.innerText = "Fetch Failed";
             }
         }
     </script>
