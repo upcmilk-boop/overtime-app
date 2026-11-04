@@ -21,7 +21,9 @@ header.top{position:sticky;top:12px;z-index:10;display:flex;align-items:center;j
 .brand h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.5px}
 .brand h1 span{color:var(--teal)}
 .brand small{color:var(--muted);font-size:13px}
-.pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:#3d4b49;background:#f7faf9;max-width:440px}
+/* পিলটিকে ক্লিকেবল বাটনের মতো ডিজাইন করা হয়েছে */
+.pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:#3d4b49;background:#f7faf9;max-width:440px;cursor:pointer;transition:0.2s;}
+.pill:hover{background:#fff;border-color:var(--teal);box-shadow:0 2px 8px rgba(20,60,55,.1);}
 .dot{width:8px;height:8px;border-radius:50%;background:#7a8a87;flex:none}
 .pill.ok .dot{background:#27ae60}.pill.busy .dot{background:var(--amber)}.pill.err .dot{background:var(--red)}
 .grid{display:grid;grid-template-columns:350px 1fr;gap:20px;align-items:start}
@@ -88,7 +90,8 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
     <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
     <div><h1>Overtime <span>Calculator</span></h1><small id="dutyLbl"></small></div>
   </div>
-  <div class="pill" id="pill"><span class="dot"></span><span id="pillTxt"></span></div>
+  <!-- এখানে ক্লিক করলে সেটিংস ওপেন হবে -->
+  <div class="pill" id="pill" onclick="openSettings()"><span class="dot"></span><span id="pillTxt"></span></div>
 </header>
 
 <div class="grid">
@@ -199,8 +202,8 @@ const CALC_FIELDS = ['start','end','offDay','rounding','snack','snackTime'];
 const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
 let S = { ...DEF, ...load(LS.s, {}) };
 if (!S.url && DEFAULT_SCRIPT_URL) S.url = DEFAULT_SCRIPT_URL;
-let E = load(LS.e, {});          // { 'YYYY-MM-DD': '6.30' }
-let P = load(LS.p, {});          // dates waiting to sync
+let E = load(LS.e, {});          
+let P = load(LS.p, {});          
 let settingsDirty = load(LS.d, false);
 let settingsVer = 0;
 
@@ -357,10 +360,29 @@ FIELDS.forEach(f => {
   });
 });
 
+// পিল-এ ক্লিক করলে সেটিংস ওপেন হওয়ার ফাংশন
+window.openSettings = function() {
+    const box = document.getElementById('settingsBox');
+    box.open = true;
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => {
+        const keyInput = document.getElementById('s_key');
+        if(keyInput) keyInput.focus();
+    }, 300);
+}
+
 let timer = null, syncing = false;
 const canSync = () => !!(S.url && S.key);
 function setPill(state, txt) { $('pill').className = 'pill ' + state; $('pillTxt').textContent = txt; }
-function idlePill() { setPill('', 'Enter your Sync Key in Settings to back up data'); }
+
+function idlePill() { 
+    if(!S.key) {
+        setPill('err', '⚠️ Click here to enter your Sync Key'); 
+    } else {
+        setPill('', 'Click here to check connection / settings');
+    }
+}
+
 function scheduleSync() {
   if (!canSync()) return idlePill();
   setPill('busy', 'Saving…');
@@ -401,7 +423,7 @@ async function pushSync() {
     setPill('ok', 'Saved to Google Sheet · ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   } catch (err) {
     console.error(err);
-    setPill('err', navigator.onLine ? 'Sync failed – check Sync Key' : 'Offline – will sync when online');
+    setPill('err', navigator.onLine ? 'Sync failed – Check key or App Script access' : 'Offline – will sync when online');
   } finally { syncing = false; }
 }
 
@@ -418,7 +440,7 @@ async function pullSync() {
     await pushSync();
   } catch (err) {
     console.error(err);
-    setPill('err', navigator.onLine ? 'Invalid Sync Key or Connection error' : 'Offline – using saved data');
+    setPill('err', navigator.onLine ? 'Failed! Check key or Apps Script Deployment' : 'Offline – using saved data');
   }
 }
 
