@@ -1,502 +1,1032 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overtime Pro - Live Cloud Edition</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#1e293b',      /* Medium Slate Background */
-                        cardBg: '#334155',      /* Soft Slate Card Background */
-                        cardBorder: '#475569',
-                        inputBg: '#1e293b',
-                        primary: '#3b82f6',
-                        accent: '#10b981',
-                        gold: '#f59e0b'
-                    }
-                }
-            }
-        }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1e293b;
-            color: #f1f5f9;
-        }
-        .glass-card {
-            background: rgba(51, 65, 85, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        input[type="time"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.8);
-        }
+<title>Overtime Calculator</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky total + download column on the left, a month timecard (one row per day) on the right; stacks on phones. */
+:root {
+  --bg: #EDF2F2;
+  --surface: #FFFFFF;
+  --surface-2: #F4F8F8;
+  --ink: #0D1B1F;
+  --muted: #586B70;
+  --line: #D5E0E1;
+  --accent: #0B6A63;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DDF0ED;
+  --holiday: #E8EEF0;
+  --warn: #B3261E;
+  --f-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #091214; --surface: #101C1F; --surface-2: #0C1618; --ink: #E5F0EF; --muted: #8CA3A7;
+    --line: #213438; --accent: #4FD1C2; --accent-ink: #04201D; --accent-soft: #12302D;
+    --holiday: #132326; --warn: #FF8F85;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #091214; --surface: #101C1F; --surface-2: #0C1618; --ink: #E5F0EF; --muted: #8CA3A7;
+  --line: #213438; --accent: #4FD1C2; --accent-ink: #04201D; --accent-soft: #12302D;
+  --holiday: #132326; --warn: #FF8F85;
+  color-scheme: dark;
+}
 
-        /* Print Optimization: Print only report and summary, hide buttons/forms */
-        @media print {
-            body {
-                background-color: #ffffff !important;
-                color: #000000 !important;
-            }
-            header, .no-print, form, #statusBar {
-                display: none !important;
-            }
-            .glass-card {
-                background: #ffffff !important;
-                border: none !important;
-                box-shadow: none !important;
-                color: #000000 !important;
-            }
-            table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-            }
-            th, td {
-                border: 1px solid #cbd5e1 !important;
-                color: #000000 !important;
-                padding: 8px !important;
-            }
-            th {
-                background-color: #f1f5f9 !important;
-            }
-        }
-    </style>
-</head>
-<body class="min-h-screen p-4 md:p-8">
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1160px; margin: 0 auto; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    <div class="max-w-6xl mx-auto space-y-6">
-        
-        <!-- Header -->
-        <header class="glass-card p-6 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-4">
-                <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-3.5 rounded-2xl shadow-lg shadow-blue-500/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-300 bg-clip-text text-transparent">
-                        Overtime Pro <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LIVE CLOUD</span>
-                    </h1>
-                    <p class="text-xs text-slate-300 mt-0.5">Centralized Real-Time Overtime & Food Allowance Tracker</p>
-                </div>
-            </div>
+.top { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.mark { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex: none; }
+h1 { font-size: clamp(22px, 3vw, 28px); font-weight: 800; letter-spacing: -0.02em; margin: 0; line-height: 1.15; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 14px; margin: 2px 0 0; }
 
-            <div class="flex flex-wrap gap-3">
-                <button onclick="syncFromCloud()" class="flex items-center space-x-2 bg-indigo-600/40 hover:bg-indigo-600 text-indigo-100 border border-indigo-400/40 px-4 py-2.5 rounded-2xl text-xs font-medium transition shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    <span>Refresh Sync</span>
-                </button>
-                <button onclick="window.print()" class="flex items-center space-x-2 bg-slate-700 hover:bg-slate-600 text-slate-100 px-4 py-2.5 rounded-2xl text-xs font-medium transition border border-slate-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    <span>Print / PDF Report</span>
-                </button>
-                <button onclick="exportCSV()" class="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-2xl text-xs transition shadow-lg shadow-emerald-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    <span>Export CSV</span>
-                </button>
-            </div>
-        </header>
+.layout { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 940px) {
+  .layout { grid-template-columns: minmax(0, 350px) minmax(0, 1fr); align-items: start; }
+  .side { position: sticky; top: 16px; }
+}
+.side { display: grid; gap: 16px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); min-width: 0; }
+.pad { padding: 16px; }
 
-        <!-- Live Status Bar -->
-        <div id="statusBar" class="glass-card px-5 py-3 rounded-2xl text-xs text-slate-300 flex items-center justify-between">
-            <div class="flex items-center space-x-2.5">
-                <span id="syncIndicator" class="h-2.5 w-2.5 rounded-full bg-emerald-400 inline-block shadow-lg shadow-emerald-500/50 animate-pulse"></span>
-                <span id="syncStatusText" class="font-medium text-slate-100">Central Live Cloud Server Connected</span>
-            </div>
-            <span id="lastSyncTime" class="text-slate-300 text-[11px]">Syncing...</span>
-        </div>
+/* Total */
+.sum { background: var(--accent); color: var(--accent-ink); border-radius: var(--r); padding: 20px; min-width: 0; }
+.sum .lab { font-size: 14px; font-weight: 600; opacity: 0.88; }
+.big { font-family: var(--f-num); font-size: clamp(46px, 8vw, 58px); font-weight: 500; line-height: 1; letter-spacing: -0.03em; margin: 10px 0 4px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.big small { font-family: var(--f-body); font-size: 17px; font-weight: 600; letter-spacing: 0; opacity: 0.88; }
+.hm { font-family: var(--f-num); font-size: 14px; opacity: 0.88; min-height: 21px; }
+.bars { display: flex; align-items: flex-end; gap: 2px; height: 42px; margin-top: 16px; }
+.bars i { flex: 1; min-width: 0; background: currentColor; border-radius: 2px 2px 0 0; }
+.bars i.z { height: 2px !important; opacity: 0.3; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, currentColor 28%, transparent); }
+.stat b { display: block; font-family: var(--f-num); font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
+.stat span { font-size: 12px; opacity: 0.85; }
 
-        <!-- Info Highlights -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="glass-card p-4 rounded-2xl border border-slate-700">
-                <div class="text-slate-300 text-xs font-medium mb-1">Standard Duty Hours</div>
-                <div class="text-base font-bold text-white">08:00 AM - 05:00 PM</div>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border border-slate-700">
-                <div class="text-slate-300 text-xs font-medium mb-1">Overtime Rate</div>
-                <div class="text-base font-bold text-emerald-400">10.62 SAR / hour</div>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border border-slate-700">
-                <div class="text-slate-300 text-xs font-medium mb-1">Food Allowance</div>
-                <div class="text-base font-bold text-amber-400">17 SAR <span class="text-xs text-slate-300 font-normal">(If OT > 0)</span></div>
-            </div>
-        </div>
+/* Buttons */
+.btnrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { font: inherit; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 12px; border-radius: 12px; border: 1.5px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+.btn.alt { background: transparent; color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.small { min-height: 36px; font-size: 14px; padding: 0 12px; }
+.btn.ghost { background: transparent; color: var(--muted); border-color: var(--line); font-weight: 600; }
+.h2 { font-size: 15px; font-weight: 700; margin: 0 0 12px; }
+.fine { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+.fine:empty { display: none; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.two b { display: block; font-family: var(--f-num); font-size: 24px; font-weight: 500; line-height: 1.2; }
+.two span { font-size: 13px; color: var(--muted); }
+.grand { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-weight: 700; font-size: 15px; }
+.grand b { font-family: var(--f-num); font-size: 18px; font-weight: 600; color: var(--accent); }
+.sn { display: block; font-size: 12.5px; font-weight: 700; color: var(--accent); margin-top: 3px; }
+.sn:empty { display: none; }
+.top > div { min-width: 0; }
+.sync { margin-left: auto; font-size: 12.5px; font-weight: 600; color: var(--muted); text-align: right; max-width: 48%; line-height: 1.3; }
+.sync::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
+.sync[data-s="ok"]::before { background: var(--accent); }
+.sync[data-s="warn"]::before { background: var(--warn); }
+.sync { display: none; }
+.stack { display: grid; gap: 10px; }
+.usbst { font-size: 14px; font-weight: 600; margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); line-height: 1.4; }
+.usbst[data-s="ok"] { border-color: var(--accent); }
+.usbst[data-s="warn"] { border-color: var(--warn); }
+.usbst::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 8px; }
+.usbst[data-s="ok"]::before { background: var(--accent); }
+.usbst[data-s="warn"]::before { background: var(--warn); }
+.code { font-family: var(--f-num); font-size: 16px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; min-height: 76px; width: 100%; min-width: 0; resize: vertical; }
 
-        <!-- Main Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- Input Form -->
-            <div class="lg:col-span-5 glass-card p-6 rounded-3xl border border-slate-700 shadow-xl space-y-5">
-                <h2 class="text-base font-bold flex items-center space-x-2 text-white">
-                    <span class="bg-blue-600/40 text-blue-300 p-1.5 rounded-xl border border-blue-500/30 text-xs">✍️</span>
-                    <span>Add New Overtime Record</span>
-                </h2>
+/* Settings */
+details.card > summary { list-style: none; cursor: pointer; padding: 14px 16px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary::after { content: "+"; font-family: var(--f-num); font-size: 20px; color: var(--muted); }
+details.card[open] > summary::after { content: "–"; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px 16px; }
+.f { display: grid; gap: 4px; min-width: 0; align-content: start; }
+.f.wide { grid-column: 1 / -1; }
+label { font-size: 13px; font-weight: 600; color: var(--muted); }
+input, select { font: inherit; font-size: 16px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; min-height: 42px; width: 100%; min-width: 0; }
+input::placeholder { color: var(--muted); opacity: 0.7; }
+.fields .fine { grid-column: 1 / -1; margin: 0; }
 
-                <form id="otForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                    <input type="hidden" id="editIndex" value="-1">
-                    
-                    <div>
-                        <label class="block text-xs font-medium text-slate-200 mb-1.5">Select Date</label>
-                        <input type="date" id="otDate" required onchange="handleDateChange()" 
-                            class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-400 transition shadow-inner">
-                    </div>
+/* Timecard */
+.mnav { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.mtitle { font-weight: 800; font-size: 18px; letter-spacing: -0.01em; flex: 1; text-align: center; }
+.iconbtn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); display: grid; place-items: center; cursor: pointer; flex: none; padding: 0; }
+.hint { margin: 0; padding: 10px 14px; font-size: 13px; color: var(--muted); background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.note { background: var(--accent-soft); border: 1px dashed var(--accent); border-radius: 12px; padding: 10px 12px; margin: 12px 14px 0; font-size: 14px; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.rh, .row { display: grid; grid-template-columns: 78px minmax(0, 1fr) 96px; gap: 10px; padding-inline: 14px; }
+.rh { padding-block: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); margin-top: 12px; border-top: 1px solid var(--line); background: var(--surface-2); }
+.rh span:last-child { text-align: right; }
+.row { padding-block: 8px; border-bottom: 1px solid var(--line); align-items: start; }
+.row.hol { background: var(--holiday); }
+.d { display: flex; flex-direction: column; line-height: 1.2; padding-top: 3px; min-width: 0; }
+.d b { font-family: var(--f-num); font-size: 17px; font-weight: 600; }
+.d span { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.tag { display: inline-block; font-size: 10.5px; font-weight: 700; line-height: 1.5; padding: 0 6px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); margin-top: 3px; align-self: flex-start; }
+.tag.off { background: var(--line); color: var(--muted); }
+.c { min-width: 0; }
+.c input { font-family: var(--f-num); font-size: 16px; }
+.c input.bad { border-color: var(--warn); }
+.err { display: block; color: var(--warn); font-size: 12.5px; font-weight: 600; margin-top: 3px; }
+.err:empty { display: none; }
+.ot { text-align: right; font-family: var(--f-num); padding-top: 2px; line-height: 1.25; min-width: 0; }
+.ot b { display: block; font-size: 18px; font-weight: 600; color: var(--accent); }
+.ot span { font-size: 12px; color: var(--muted); }
+.ot.zero b { color: var(--muted); font-weight: 400; }
+.tf { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px; }
+.tf strong { font-family: var(--f-num); font-size: 17px; }
+@media (min-width: 640px) {
+  .rh, .row { grid-template-columns: 110px minmax(0, 1fr) 150px; }
+  .c input { max-width: 240px; }
+}
+@media (max-width: 420px) {
+  .fields { grid-template-columns: 1fr; }
+  .stat b { font-size: 15px; }
+}
 
-                    <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">Day Type:</label>
-                        <div id="dayTypeBadge" class="inline-block text-xs px-3 py-1.5 rounded-xl font-medium bg-slate-700 text-slate-200 border border-slate-600">Select Date</div>
-                    </div>
+.toastwrap { position: fixed; left: 0; right: 0; bottom: 0; display: grid; place-items: center; pointer-events: none; padding: 0 max(16px, env(safe-area-inset-left, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px)); }
+.toast { background: var(--ink); color: var(--bg); font-weight: 600; font-size: 14px; padding: 10px 16px; border-radius: 12px; max-width: 460px; opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s; }
+.toast.show { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
 
-                    <div>
-                        <label class="block text-xs font-medium text-slate-200 mb-1.5">Leaving Time</label>
-                        <input type="time" id="leavingTime" required oninput="calculateLivePreview()" 
-                            class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-400 transition shadow-inner">
-                        <p class="text-[11px] text-slate-400 mt-1">Sun-Thu: OT starts after 17:00. Friday: Full-day OT from 08:00 AM.</p>
-                    </div>
+/* ===== Premium layer ===== */
+:root{--r:22px;--sh:0 1px 2px rgba(9,30,32,.05),0 14px 36px -14px rgba(9,30,32,.22);--sum-a:#0a5e58;--sum-b:#17b3a1;--glow:rgba(11,106,99,.35)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--sh:0 1px 2px rgba(0,0,0,.5),0 16px 40px -14px rgba(0,0,0,.7);--sum-a:#2fc4b2;--sum-b:#7ee8da;--glow:rgba(79,209,194,.3)}}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(1000px 520px at 8% -8%,rgba(23,179,161,.18),transparent 60%),radial-gradient(800px 480px at 100% 0,rgba(56,130,246,.12),transparent 55%),var(--bg);background-attachment:fixed;min-height:100vh}
+.card{box-shadow:var(--sh)}
+.top{background:color-mix(in srgb,var(--surface) 72%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;box-shadow:var(--sh);position:sticky;top:10px;z-index:20}
+.mark{background:linear-gradient(135deg,var(--sum-a),var(--sum-b));color:#fff;box-shadow:0 8px 20px -6px var(--glow)}
+h1{background:linear-gradient(90deg,var(--ink),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+header.top .sync{display:flex !important;align-items:center;max-width:none;cursor:pointer;padding:7px 14px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap}
+header.top .sync:hover{border-color:var(--accent)}
+.sync[data-s="ok"]::before{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 25%,transparent)}
+.sync[data-s="wait"]::before{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.sum{position:relative;overflow:hidden;background:linear-gradient(150deg,var(--sum-a),var(--sum-b));box-shadow:0 22px 44px -16px var(--glow)}
+.sum::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 88% 8%,rgba(255,255,255,.28),transparent 42%),repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 2px,transparent 2px 14px);pointer-events:none}
+.sum>*{position:relative}
+.big{text-shadow:0 2px 18px rgba(0,0,0,.14)}
+.bars i{opacity:.9;border-radius:4px 4px 0 0}
+.stat{background:color-mix(in srgb,currentColor 9%,transparent);border-radius:12px;padding:8px 10px}
+.btn{border-radius:14px;transition:transform .15s,box-shadow .15s,background .15s}
+.btn:not(.alt):not(.ghost){background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 86%,#fff),var(--accent));box-shadow:0 8px 18px -8px var(--glow)}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+.btn.alt:hover:not(:disabled),.btn.ghost:hover:not(:disabled){background:var(--accent-soft)}
+.btn:active{transform:none}
+input,select,textarea{border-radius:12px;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent)}
+.h2{display:flex;align-items:center;gap:8px;letter-spacing:-.01em}
+.h2::before{content:"";width:4px;height:16px;border-radius:4px;background:linear-gradient(var(--sum-a),var(--sum-b))}
+.two b{color:var(--accent)}
+.mnav{background:linear-gradient(180deg,var(--surface-2),var(--surface))}
+.mtitle{font-size:20px}
+.iconbtn{border-radius:12px;transition:background .15s,transform .15s}.iconbtn:hover{background:var(--accent-soft);transform:scale(1.06)}
+.row{transition:background .15s}
+.row:hover{background:color-mix(in srgb,var(--accent-soft) 70%,transparent)}
+.row.today{background:var(--accent-soft);box-shadow:inset 4px 0 0 var(--accent)}
+.row.hol{background:repeating-linear-gradient(135deg,var(--holiday) 0 8px,color-mix(in srgb,var(--holiday) 70%,var(--surface)) 8px 16px)}
+.ot:not(.zero) b{display:inline-block;padding:1px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.tag{letter-spacing:.02em}
+.rh{letter-spacing:.08em}
+.usbst,.note,.hint{border-radius:12px}
+.toast{box-shadow:0 14px 30px -10px rgba(0,0,0,.45);border-radius:14px}
+details.card>summary:hover{background:var(--surface-2);border-radius:var(--r)}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.side>*,.layout>main{animation:up .55s cubic-bezier(.2,.7,.2,1) both}
+.side>*:nth-child(2){animation-delay:.06s}.side>*:nth-child(3){animation-delay:.12s}.side>*:nth-child(4){animation-delay:.18s}.layout>main{animation-delay:.1s}
+@media(prefers-reduced-motion:reduce){.side>*,.layout>main,.sync::before{animation:none !important}.btn,.iconbtn{transition:none}html{scroll-behavior:auto}}
+</style>
 
-                    <!-- Live Calculation Card -->
-                    <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl space-y-2.5">
-                        <div class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">LIVE PREVIEW</div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-300">Overtime Duration:</span>
-                            <span id="previewOtTime" class="font-bold text-white">0 Hours 0 Mins</span>
-                        </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-300">Overtime Payment:</span>
-                            <span id="previewOtPay" class="font-bold text-emerald-400">0.00 SAR</span>
-                        </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-300">Food Allowance:</span>
-                            <span id="previewFood" class="font-bold text-amber-400">0 SAR</span>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3.5 rounded-2xl transition shadow-lg shadow-blue-600/25">
-                        Save & Cloud Sync
-                    </button>
-                    <button type="button" id="cancelEditBtn" onclick="resetForm()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2.5 rounded-2xl transition hidden border border-slate-600">
-                        Cancel
-                    </button>
-                </form>
-            </div>
-
-            <!-- Summary & Table -->
-            <div class="lg:col-span-7 space-y-6">
-                
-                <!-- Monthly Cards -->
-                <div class="glass-card p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Monthly Filter:</h3>
-                        <div class="flex items-center gap-2 w-full sm:w-auto no-print">
-                            <input type="month" id="filterMonth" onchange="renderTable()" class="bg-slate-800 border border-slate-600 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-400">
-                            <button onclick="clearFilter()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-xl text-xs transition border border-slate-600">All Months</button>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div class="bg-slate-800/70 p-4 rounded-2xl border border-slate-700">
-                            <div class="text-slate-300 text-xs mb-1">Total OT Hours</div>
-                            <div id="totalOtHours" class="text-lg font-bold text-white">0h 0m</div>
-                            <div id="totalOtDecimal" class="text-[10px] text-slate-400 mt-0.5">0.00 Hours (Decimal)</div>
-                        </div>
-                        <div class="bg-slate-800/70 p-4 rounded-2xl border border-slate-700">
-                            <div class="text-slate-300 text-xs mb-1">Total OT Payment</div>
-                            <div id="totalOtPay" class="text-lg font-bold text-emerald-400">0.00 SAR</div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">Rate: 10.62 SAR / hr</div>
-                        </div>
-                        <div class="bg-slate-800/70 p-4 rounded-2xl border border-slate-700">
-                            <div class="text-slate-300 text-xs mb-1">Total Food Allowance</div>
-                            <div id="totalFood" class="text-lg font-bold text-amber-400">0.00 SAR</div>
-                            <div class="text-[10px] text-slate-400 mt-0.5">17 SAR per OT day</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Table -->
-                <div class="glass-card p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-sm font-bold flex items-center space-x-2 text-white">
-                            <span>📋</span>
-                            <span>Live Overtime History</span>
-                        </h3>
-                        <span id="recordCountBadge" class="text-xs bg-slate-700 border border-slate-600 px-3 py-1 rounded-full text-slate-200">0 Records</span>
-                    </div>
-
-                    <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-slate-700 text-xs text-slate-300 sticky top-0 bg-slate-700 z-10">
-                                    <th class="py-3 px-3">Date & Day</th>
-                                    <th class="py-3 px-3">Leaving Time</th>
-                                    <th class="py-3 px-3">OT Hours</th>
-                                    <th class="py-3 px-3">OT Payment</th>
-                                    <th class="py-3 px-3">Food Allowance</th>
-                                    <th class="py-3 px-3 text-right no-print">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="otTableBody" class="divide-y divide-slate-700/60 text-xs">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+<div class="wrap">
+  <header class="top">
+    <div class="mark" aria-hidden="true">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
     </div>
+    <div>
+      <h1>Overtime Calculator</h1>
+      <p class="sub" id="sub">Duty 8:00 AM – 5:00 PM</p>
+    </div>
+    <div class="sync" id="sync" role="status" data-s="wait" title="Click to sync now">Connecting…</div>
+  </header>
 
-    <!-- JS Logic -->
-    <script>
-        const HARDCODED_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuP8ikA7mkC_m4yKBcbpjT_yjYlgw7sO80Pt9zF1bFs8guWnX0zjMftIZefLCYCds2/exec";
-        const OT_RATE = 10.62;
-        const FOOD_ALLOWANCE = 17;
-        let records = [];
+  <div class="layout">
+    <aside class="side">
+      <section class="sum" aria-label="Monthly total">
+        <div class="lab" id="sumLabel">Total overtime</div>
+        <div class="big"><span id="bigTotal">0</span><small>hours</small></div>
+        <div class="hm" id="bigHm"></div>
+        <div class="bars" id="bars" aria-hidden="true"></div>
+        <div class="stats">
+          <div class="stat"><b id="sDays">0</b><span>OT days</span></div>
+          <div class="stat"><b id="sAvg">–</b><span>Avg per OT day</span></div>
+          <div class="stat"><b id="sAmt">–</b><span>OT pay (SR)</span></div>
+        </div>
+      </section>
 
-        const daysInEnglish = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      <section class="card pad" aria-label="Snack allowance">
+        <h2 class="h2">Snack allowance</h2>
+        <div class="two">
+          <div><b id="snDays">0</b><span>days out at or after <i id="snAfter" style="font-style:normal">6:00 PM</i></span></div>
+          <div><b id="snAmt">0</b><span>SR snack total</span></div>
+        </div>
+        <p class="fine">Counted separately from overtime pay.</p>
+      </section>
 
-        window.onload = function() {
-            document.getElementById('otDate').valueAsDate = new Date();
-            handleDateChange();
-            syncFromCloud();
-        };
+      <section class="card pad" aria-label="Download">
+        <h2 class="h2">Download report</h2>
+        <div class="btnrow">
+          <button class="btn" id="btnXlsx" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+            Excel
+          </button>
+          <button class="btn alt" id="btnPdf" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>
+            PDF
+          </button>
+        </div>
+        <p class="fine" id="dlnote">Entries save automatically in this browser. Excel and PDF need an internet connection the first time the page opens.</p>
+      </section>
 
-        function handleDateChange() {
-            const dateVal = document.getElementById('otDate').value;
-            if(!dateVal) return;
-            const dateObj = new Date(dateVal);
-            const dayIndex = dateObj.getDay();
-            
-            const badge = document.getElementById('dayTypeBadge');
-            if(dayIndex === 5) { // Friday
-                badge.innerText = "Friday (Full-day OT from 08:00 AM)";
-                badge.className = "inline-block text-xs px-3 py-1.5 rounded-xl font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-            } else {
-                badge.innerText = `${daysInEnglish[dayIndex]} (OT after 17:00)`;
-                badge.className = "inline-block text-xs px-3 py-1.5 rounded-xl font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30";
-            }
-            calculateLivePreview();
-        }
+      <section class="card pad" aria-label="USB data file">
+        <h2 class="h2">Data file on your USB</h2>
+        <p class="usbst" id="usbStatus" data-s="wait">Not connected. Connect the USB data file before you type anything.</p>
+        <div class="stack">
+          <button class="btn small" id="btnUsbOpen" type="button">Open data file from USB</button>
+          <button class="btn alt small" id="btnUsbCreate" type="button">Create new data file on USB</button>
+          <button class="btn small" id="btnUsbRe" type="button" hidden>Reconnect USB file</button>
+        </div>
+        <p class="fine">First time: create the file on your USB. After that, open it on any computer. Every change is written to that file as you type. Works in Chrome or Edge on a computer. On a phone, use the backup buttons below.</p>
+      </section>
 
-        function calculateOT(dateStr, leavingTimeStr) {
-            if(!dateStr || !leavingTimeStr) return { minutes: 0, otPay: 0, food: 0 };
-            const dateObj = new Date(dateStr);
-            const dayIndex = dateObj.getDay();
-            
-            const parts = leavingTimeStr.split(':');
-            const leaveH = parseInt(parts[0], 10);
-            const leaveM = parseInt(parts[1], 10);
-            const leaveTotalMins = leaveH * 60 + leaveM;
+      <section class="card pad" aria-label="Move data">
+        <h2 class="h2">Move data to another device</h2>
+        <p class="fine" style="margin-top:0">Moving to a new phone or computer? Save a backup on one and load it on the other. Loaded days replace the same days on that device.</p>
+        <div class="stack">
+          <div class="btnrow">
+            <button class="btn alt small" id="btnBkFile" type="button">Save backup file</button>
+            <button class="btn alt small" id="btnBkCode" type="button">Copy backup code</button>
+          </div>
+          <textarea class="code" id="codeOut" readonly hidden aria-label="Backup code"></textarea>
+          <button class="btn alt small" id="btnLoadFile" type="button">Load backup file</button>
+          <input type="file" id="fileIn" accept=".json,application/json" hidden>
+          <label for="codeIn">Or paste a backup code</label>
+          <textarea class="code" id="codeIn" placeholder="OTBACKUP1:…"></textarea>
+          <button class="btn small" id="btnImportCode" type="button">Import code</button>
+        </div>
+      </section>
 
-            let otMins = 0;
+      <details class="card" id="settings">
+        <summary>Settings: duty time, rate, name</summary>
+        <div class="fields">
+          <div class="f wide"><label for="fName">Name</label><input id="fName" type="text" autocomplete="off" placeholder="e.g. Md. Karim"></div>
+          <div class="f"><label for="fId">Employee ID</label><input id="fId" type="text" autocomplete="off"></div>
+          <div class="f"><label for="fDept">Department</label><input id="fDept" type="text" autocomplete="off"></div>
+          <div class="f"><label for="fStart">Duty start</label><input id="fStart" type="time"></div>
+          <div class="f"><label for="fEnd">Duty end</label><input id="fEnd" type="time"></div>
+          <div class="f wide"><label for="fMode">How to count overtime</label>
+            <select id="fMode">
+              <option value="exact">Exact minutes</option>
+              <option value="half">30-minute blocks (round down)</option>
+              <option value="hour">Full hours (round down)</option>
+            </select>
+          </div>
+          <div class="f"><label for="fRate">OT rate per hour (SR)</label><input id="fRate" type="text" inputmode="decimal" autocomplete="off" placeholder="optional"></div>
+          <div class="f"><label for="fSnack">Snack per day (SR)</label><input id="fSnack" type="text" inputmode="decimal" autocomplete="off"></div>
+          <div class="f wide"><label for="fSnackAfter">Snack allowance when you leave at or after</label><input id="fSnackAfter" type="time"></div>
+          <div class="f wide"><label for="fGs">Google script link (Web app URL)</label><input id="fGs" type="text" autocomplete="off" placeholder="https://script.google.com/macros/s/.../exec"></div>
+          <div class="f wide"><label for="fSync">Google sync key (your private code)</label><input id="fSync" type="text" autocomplete="off" placeholder="e.g. karim-2026-xyz"></div>
+          <p class="fine">Pick any private code and use the same code on every device. Your entries are backed up to your Google sheet under this code. Keep it secret.</p>
+          <p class="fine">Overtime counts from duty end. Snack allowance is paid on any day you leave at or after the snack time, even if the counting method rounds that day's overtime down to zero.</p>
+        </div>
+      </details>
+    </aside>
 
-            if(dayIndex === 5) { // Friday
-                const startMins = 8 * 60;
-                if(leaveTotalMins > startMins) {
-                    otMins = leaveTotalMins - startMins;
-                }
-            } else { // Sun to Thu
-                const startMins = 17 * 60;
-                if(leaveTotalMins > startMins) {
-                    otMins = leaveTotalMins - startMins;
-                }
-            }
+    <main class="card" style="overflow:hidden">
+      <div class="mnav">
+        <button class="iconbtn" id="prevM" type="button" aria-label="Previous month">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <div class="mtitle" id="mTitle" aria-live="polite"></div>
+        <button class="iconbtn" id="nextM" type="button" aria-label="Next month">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="btn small ghost" id="todayBtn" type="button">Today</button>
+      </div>
+      <p class="hint">Type the time you left. 6.30 means 6:30 PM. After midnight, type 0.30. On Friday (weekly off) every hour from duty start counts as overtime, so 8.00 means 12 hours. Press Enter to jump to the next day.</p>
+      <div class="note" id="sampleNote" hidden>
+        <span>Sample times are shown. Type your own and they clear automatically.</span>
+        <button class="btn small alt" id="clearSample" type="button">Clear samples</button>
+      </div>
+      <div class="rh"><span>Date</span><span>Time out</span><span>Overtime</span></div>
+      <div id="rows"></div>
+      <div class="tf">
+        <span>Month total <strong id="tfTotal">0 h</strong></span>
+        <button class="btn small ghost" id="clearMonth" type="button">Clear this month</button>
+      </div>
+    </main>
+  </div>
+</div>
+<div class="toastwrap"><div class="toast" id="toast" role="status"></div></div>
 
-            const otHoursDec = otMins / 60;
-            const otPay = otHoursDec * OT_RATE;
-            const food = otMins > 0 ? FOOD_ALLOWANCE : 0;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function () {
+  var EN_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var EN_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var EN_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var HOLIDAY_DOW = 5; // Friday is the weekly off day in Bangladesh
+  var MODE_EN = { exact: 'Exact minutes', half: '30-minute blocks (rounded down)', hour: 'Full hours (rounded down)' };
+  var STORE_KEY = 'ot-calc-v1';
 
-            return { minutes: otMins, otPay: otPay, food: food };
-        }
+  /*PURE-START*/
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  function normDigits(s) {
+    return s.replace(/[০-৯]/g, function (c) { return c.charCodeAt(0) - 0x09E6; })
+            .replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 0x0660; })
+            .replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 0x06F0; });
+  }
+  function parseTime(raw) {
+    var s = normDigits(String(raw == null ? '' : raw)).trim().toLowerCase();
+    if (!s) return { st: 'empty' };
+    s = s.replace(/[.,٫،]/g, ':');
+    var ap = null, am = /\s*([ap])\.?m\.?$/.exec(s);
+    if (am) { ap = am[1]; s = s.slice(0, am.index).trim(); }
+    var m = /^(\d{1,2})(?::(\d{2})|\s(\d{2}))?$/.exec(s), h, mi;
+    if (m) { h = +m[1]; mi = +(m[2] || m[3] || 0); }
+    else {
+      m = /^(\d{1,2})(\d{2})$/.exec(s);
+      if (!m) return { st: 'bad' };
+      h = +m[1]; mi = +m[2];
+    }
+    if (mi > 59) return { st: 'bad' };
+    if (ap) {
+      if (h < 1 || h > 12) return { st: 'bad' };
+      if (ap === 'a' && h === 12) h = 0;
+      if (ap === 'p' && h < 12) h += 12;
+    } else {
+      if (h > 24 || (h === 24 && mi > 0)) return { st: 'bad' };
+      if (h >= 1 && h <= 11) h += 12;
+    }
+    if (h === 0) h = 24;
+    return { st: 'ok', out: h * 60 + mi };
+  }
+  function toMin(hhmm, def) {
+    var m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || '');
+    return m ? (+m[1]) * 60 + (+m[2]) : def;
+  }
+  function label12(min) {
+    var hh = Math.floor(min / 60) % 24, mm = min % 60;
+    return ((hh % 12) || 12) + ':' + pad(mm) + ' ' + (hh >= 12 ? 'PM' : 'AM');
+  }
+  function applyMode(ot, mode) {
+    return mode === 'half' ? Math.floor(ot / 30) * 30 : mode === 'hour' ? Math.floor(ot / 60) * 60 : ot;
+  }
+  function calc(raw, endMin, mode) {
+    var p = parseTime(raw);
+    if (p.st !== 'ok') return p;
+    return { st: 'ok', out: p.out, label: label12(p.out), ot: applyMode(Math.max(0, p.out - endMin), mode) };
+  }
+  var hrs = function (min) { return String(Math.round(min / 60 * 100) / 100); };
+  function hm(min) {
+    var h = Math.floor(min / 60), m = min % 60;
+    return h && m ? h + ' h ' + m + ' min' : h ? h + ' h' : m + ' min';
+  }
+  /*PURE-END*/
 
-        function calculateLivePreview() {
-            const dateStr = document.getElementById('otDate').value;
-            const leavingTime = document.getElementById('leavingTime').value;
-            const res = calculateOT(dateStr, leavingTime);
+  var $ = function (id) { return document.getElementById(id); };
+  var round2 = function (v) { return Math.round(v * 100) / 100; };
+  var money = function (v) { return Number(round2(v).toFixed(2)).toLocaleString('en-US', { maximumFractionDigits: 2 }); };
+  var now = new Date();
 
-            const hrs = Math.floor(res.minutes / 60);
-            const mins = res.minutes % 60;
+  var S = {
+    profile: { name: '', id: '', dept: 'Quality Control', start: '08:00', end: '17:00', mode: 'exact', rate: '', snack: '17', snackAfter: '18:00' },
+    months: {}, sample: false, y: now.getFullYear(), m: now.getMonth()
+  };
+  var rowEls = {};
 
-            document.getElementById('previewOtTime').innerText = `${hrs} Hours ${mins} Mins`;
-            document.getElementById('previewOtPay').innerText = res.otPay.toFixed(2) + " SAR";
-            document.getElementById('previewFood').innerText = res.food + " SAR";
-        }
+  function key() { return S.y + '-' + pad(S.m + 1); }
+  function daysIn(y, m) { return new Date(y, m + 1, 0).getDate(); }
+  function entries() { return S.months[key()] || (S.months[key()] = {}); }
+  function endMin() { return toMin(S.profile.end, 17 * 60); }
+  function startMin() { return toMin(S.profile.start, 8 * 60); }
+  function getRate() { var v = parseFloat(normDigits(String(S.profile.rate || ''))); return v > 0 ? v : 0; }
+  function snackMin() { return toMin(S.profile.snackAfter, 18 * 60); }
+  function snackAmt() { var v = parseFloat(normDigits(String(S.profile.snack || ''))); return v > 0 ? v : 0; }
+  function snackOk(res) { return res.st === 'ok' && snackAmt() > 0 && res.out >= snackMin(); }
+  function baseMin(dow) { return dow === HOLIDAY_DOW ? startMin() : endMin(); }
 
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            const editIndex = parseInt(document.getElementById('editIndex').value);
-            const date = document.getElementById('otDate').value;
-            const leavingTime = document.getElementById('leavingTime').value;
-            
-            const res = calculateOT(date, leavingTime);
+  /* Storage: a per-browser convenience, wrapped because it can be empty or throw */
+  var saveT;
+  function save() { saveLocal(); queueSync(); if (window.__queueUsb) window.__queueUsb(); }
+  function saveLocal() {
+    clearTimeout(saveT);
+    saveT = setTimeout(function () {
+      try {
+        var months = {};
+        if (!S.sample) for (var k in S.months) { if (S.months[k] && Object.keys(S.months[k]).length) months[k] = S.months[k]; }
+        localStorage.setItem(STORE_KEY, JSON.stringify({ profile: S.profile, months: months }));
+      } catch (e) {}
+    }, 250);
+  }
+  function load() {
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) {}
+    if (saved && saved.profile) {
+      Object.assign(S.profile, saved.profile);
+      S.months = saved.months || {};
+    } else {
+      S.sample = true;
+      var t = ['6.30', '7.15', '5.45', '6.00', '8.00'], e = {}, i = 0;
+      for (var d = 1; d <= daysIn(S.y, S.m) && i < t.length; d++) {
+        if (new Date(S.y, S.m, d).getDay() !== HOLIDAY_DOW) e[d] = t[i++];
+      }
+      S.months[key()] = e;
+    }
+  }
 
-            const recordData = {
-                id: editIndex > -1 ? records[editIndex].id : Date.now().toString(),
-                date: date,
-                leavingTime: leavingTime,
-                otHours: res.minutes,
-                otPay: parseFloat(res.otPay.toFixed(2)),
-                food: res.food
-            };
+  function monthData() {
+    var e = S.months[key()] || {}, n = daysIn(S.y, S.m), rows = [], tot = 0, days = 0, snackDays = 0;
+    for (var d = 1; d <= n; d++) {
+      var dt = new Date(S.y, S.m, d);
+      var res = calc(e[d], baseMin(dt.getDay()), S.profile.mode);
+      var sk = snackOk(res);
+      rows.push({ d: d, dow: dt.getDay(), res: res, snack: sk });
+      if (res.st === 'ok' && res.ot > 0) { tot += res.ot; days++; }
+      if (sk) snackDays++;
+    }
+    return { rows: rows, tot: tot, days: days, snackDays: snackDays, snackTotal: snackDays * snackAmt() };
+  }
 
-            if(editIndex > -1) {
-                records[editIndex] = recordData;
-            } else {
-                records.push(recordData);
-            }
+  /* Rendering */
+  function setOt(r, ot) {
+    r.ot.textContent = '';
+    var b = document.createElement('b');
+    if (ot > 0) {
+      var sp = document.createElement('span');
+      b.textContent = hrs(ot); sp.textContent = hm(ot);
+      r.ot.className = 'ot'; r.ot.append(b, sp);
+    } else {
+      b.textContent = '–'; r.ot.className = 'ot zero'; r.ot.append(b);
+    }
+  }
+  function paintRow(d, setVal) {
+    var r = rowEls[d], raw = (S.months[key()] || {})[d] || '';
+    if (setVal) r.input.value = raw;
+    var c = calc(raw, baseMin(r.dow), S.profile.mode);
+    r.err.textContent = '';
+    r.input.classList.remove('bad'); r.input.removeAttribute('aria-invalid');
+    if (c.st === 'bad') {
+      r.err.textContent = 'Not understood. Try 6.30';
+      r.input.classList.add('bad'); r.input.setAttribute('aria-invalid', 'true');
+      setOt(r, 0);
+    } else setOt(r, c.st === 'ok' ? c.ot : 0);
+    r.sn.textContent = snackOk(c) ? 'Snack +' + money(snackAmt()) + ' SR' : '';
+  }
+  function paintAll(setVal) { for (var d in rowEls) paintRow(+d, setVal); }
 
-            renderTable();
-            resetForm();
-            await syncToCloud();
-        }
+  function renderSummary() {
+    var md = monthData(), rate = getRate();
+    $('sumLabel').textContent = 'Total overtime · ' + EN_FULL[S.m] + ' ' + S.y;
+    $('bigTotal').textContent = hrs(md.tot);
+    $('bigHm').textContent = md.tot > 0 ? hm(md.tot) : 'No overtime entered yet';
+    $('tfTotal').textContent = hrs(md.tot) + ' h';
+    $('sDays').textContent = md.days;
+    $('sAvg').textContent = md.days ? hrs(md.tot / md.days) + ' h' : '–';
+    $('sAmt').textContent = rate > 0 ? money(md.tot / 60 * rate) : '–';
+    $('snDays').textContent = md.snackDays;
+    $('snAfter').textContent = label12(snackMin());
+    $('snAmt').textContent = money(md.snackTotal);
+    var max = 0; md.rows.forEach(function (r) { if (r.res.st === 'ok' && r.res.ot > max) max = r.res.ot; });
+    var bars = $('bars'); bars.textContent = '';
+    md.rows.forEach(function (r) {
+      var i = document.createElement('i');
+      if (r.res.st === 'ok' && r.res.ot > 0) i.style.height = Math.max(10, r.res.ot / max * 100) + '%';
+      else i.className = 'z';
+      bars.appendChild(i);
+    });
+    $('sub').textContent = 'Duty ' + label12(startMin()) + ' – ' + label12(endMin());
+    $('sampleNote').hidden = !S.sample;
+  }
 
-        function resetForm() {
-            document.getElementById('otForm').reset();
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('otDate').valueAsDate = new Date();
-            document.getElementById('submitBtn').innerText = "Save & Cloud Sync";
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-            handleDateChange();
-        }
+  function endSample(activeDay) {
+    if (!S.sample) return;
+    S.sample = false; S.months = {};
+    for (var d in rowEls) { if (+d !== activeDay) { rowEls[d].input.value = ''; } }
+    paintAll(false);
+    $('sampleNote').hidden = true;
+  }
 
-        function editRecord(index) {
-            const r = records[index];
-            document.getElementById('editIndex').value = index;
-            document.getElementById('otDate').value = r.date;
-            document.getElementById('leavingTime').value = r.leavingTime;
-            document.getElementById('submitBtn').innerText = "Update & Sync";
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-            handleDateChange();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+  function buildRows() {
+    var host = $('rows'); host.textContent = ''; rowEls = {};
+    $('mTitle').textContent = EN_FULL[S.m] + ' ' + S.y;
+    var n = daysIn(S.y, S.m), isNow = S.y === now.getFullYear() && S.m === now.getMonth();
+    for (var d = 1; d <= n; d++) {
+      (function (d) {
+        var dow = new Date(S.y, S.m, d).getDay(), hol = dow === HOLIDAY_DOW;
+        var el = document.createElement('div'); el.className = 'row' + (hol ? ' hol' : '');
+        var dc = document.createElement('div'); dc.className = 'd';
+        dc.innerHTML = '<b>' + d + '</b><span>' + EN_DAYS[dow] + '</span>' +
+          (isNow && d === now.getDate() ? '<em class="tag" style="font-style:normal">Today</em>' : '') +
+          (hol ? '<em class="tag off" style="font-style:normal">Weekly off</em>' : '');
+        var cc = document.createElement('div'); cc.className = 'c';
+        var input = document.createElement('input');
+        input.type = 'text'; input.id = 't' + d; input.setAttribute('inputmode', 'decimal');
+        input.setAttribute('enterkeyhint', 'next'); input.autocomplete = 'off'; input.placeholder = '6.30';
+        input.setAttribute('aria-label', d + ' ' + EN_FULL[S.m] + ', time out');
+        var err = document.createElement('span'); err.className = 'err';
+        var sn = document.createElement('span'); sn.className = 'sn';
+        cc.append(input, err, sn);
+        var ot = document.createElement('div'); ot.className = 'ot zero';
+        el.append(dc, cc, ot); host.appendChild(el);
+        rowEls[d] = { el: el, input: input, err: err, ot: ot, sn: sn, dow: dow };
 
-        async function deleteRecord(index) {
-            if(confirm('Are you sure you want to delete this record?')) {
-                records.splice(index, 1);
-                renderTable();
-                await syncToCloud();
-            }
-        }
+        input.addEventListener('input', function () {
+          if (S.sample) endSample(d);
+          var e = entries(), v = input.value.trim();
+          if (v) e[d] = v; else delete e[d];
+          paintRow(d, false); renderSummary(); save();
+        });
+        input.addEventListener('blur', function () {
+          var c = calc(input.value, endMin(), S.profile.mode);
+          if (c.st === 'ok' && input.value !== c.label) {
+            input.value = c.label; entries()[d] = c.label; paintRow(d, false); save();
+          }
+        });
+        input.addEventListener('keydown', function (ev) {
+          var next = null;
+          if (ev.key === 'Enter' || ev.key === 'ArrowDown') next = rowEls[d + 1];
+          else if (ev.key === 'ArrowUp') next = rowEls[d - 1];
+          if (next) { ev.preventDefault(); next.input.focus(); next.input.select(); }
+        });
+        paintRow(d, true);
+      })(d);
+    }
+  }
 
-        function renderTable() {
-            const filterMonth = document.getElementById('filterMonth').value;
-            const tbody = document.getElementById('otTableBody');
-            tbody.innerHTML = '';
+  function showMonth() { buildRows(); renderSummary(); var t = rowEls[now.getDate()]; if (t && S.y === now.getFullYear() && S.m === now.getMonth()) t.el.classList.add('today'); }
 
-            let filtered = records;
-            if(filterMonth) {
-                filtered = records.filter(r => r.date.startsWith(filterMonth));
-            }
+  /* Settings */
+  function bind(id, prop, after) {
+    var el = $(id); el.value = S.profile[prop];
+    el.addEventListener('input', function () { S.profile[prop] = el.value; if (after) after(); save(); });
+  }
+  function refresh() { paintAll(false); renderSummary(); }
+  bindAll();
+  function bindAll() {}
 
-            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+  /* Exports */
+  function exportModel() { return monthData(); }
+  function makeXlsx() {
+    var md = exportModel(), p = S.profile, rate = getRate(), sAmt = snackAmt();
+    var num = function (v) { return { t: 'n', v: v, z: '0.00' }; };
+    var aoa = [
+      ['Overtime Statement'], [EN_FULL[S.m] + ' ' + S.y], [],
+      ['Name', p.name || '', '', 'Employee ID', p.id || ''],
+      ['Department', p.dept || '', '', 'Duty hours', label12(startMin()) + ' - ' + label12(endMin())],
+      ['Counting', MODE_EN[p.mode], '', 'Snack rule', money(sAmt) + ' SR per day, out at or after ' + label12(snackMin())],
+      ['Friday', 'All hours from duty start counted as overtime'],
+      [],
+      ['Date', 'Day', 'Out time', 'OT (hours)', 'OT (h:mm)', 'Snack (SR)']
+    ];
+    var first = aoa.length + 1;
+    md.rows.forEach(function (r) {
+      var ok = r.res.st === 'ok';
+      aoa.push([pad(r.d) + ' ' + EN_MONTHS[S.m] + ' ' + S.y, EN_DAYS[r.dow], ok ? r.res.label : '', ok ? num(r.res.ot / 60) : '', ok && r.res.ot > 0 ? hm(r.res.ot) : '', ok ? num(r.snack ? sAmt : 0) : '']);
+    });
+    var last = aoa.length, T = aoa.length + 1, fixes = {}, r2 = T;
+    aoa.push(['TOTAL', '', '', num(md.tot / 60), hm(md.tot), num(md.snackTotal)]);
+    fixes['D' + T] = { t: 'n', v: md.tot / 60, z: '0.00', f: 'SUM(D' + first + ':D' + last + ')' };
+    fixes['F' + T] = { t: 'n', v: md.snackTotal, z: '0.00', f: 'SUM(F' + first + ':F' + last + ')' };
+    var pay = rate > 0 ? round2(md.tot / 60 * rate) : 0, payRow = 0;
+    if (rate > 0) {
+      aoa.push(['OT rate (SR per hour)', '', '', num(rate)]); r2++;
+      aoa.push(['OT pay (SR)', '', '', num(pay)]); r2++;
+      payRow = r2;
+      fixes['D' + r2] = { t: 'n', v: pay, z: '0.00', f: 'ROUND(D' + T + '*D' + (r2 - 1) + ',2)' };
+    }
+    aoa.push(['Snack allowance (SR)', '', '', num(md.snackTotal)]); r2++;
+    var snRow = r2;
+    fixes['D' + r2] = { t: 'n', v: md.snackTotal, z: '0.00', f: 'F' + T };
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    Object.keys(fixes).forEach(function (k) { ws[k] = fixes[k]; });
+    ws['!cols'] = [{ wch: 22 }, { wch: 8 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 12 }];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Overtime');
+    return XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  }
 
-            let totalMins = 0;
-            let totalPay = 0;
-            let totalFood = 0;
+  function pdfText(s) { return String(s || '').replace(/[^\x20-\x7E -ÿ]/g, '').trim(); }
+  function makePdf() {
+    var jsPDF = window.jspdf.jsPDF, doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    var md = exportModel(), p = S.profile, rate = getRate(), sAmt = snackAmt();
+    var W = 210, M = 14, TW = W - 2 * M;
+    var teal = [11, 106, 99], ink = [13, 27, 31], mute = [88, 107, 112], line = [213, 224, 225], hol = [232, 238, 240], soft = [221, 240, 237];
+    var col = function (c) { doc.setTextColor(c[0], c[1], c[2]); };
+    doc.setFillColor(teal[0], teal[1], teal[2]); doc.rect(0, 0, W, 28, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.text('Overtime Statement', M, 13);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(EN_FULL[S.m] + ' ' + S.y, M, 21);
+    doc.setFontSize(10); doc.text(pdfText(p.dept) || 'Quality Control', W - M, 13, { align: 'right' });
 
-            filtered.forEach((r, idx) => {
-                totalMins += r.otHours;
-                totalPay += r.otPay;
-                totalFood += r.food;
+    var info = [
+      ['Name', pdfText(p.name) || '-', 'Employee ID', pdfText(p.id) || '-'],
+      ['Duty hours', label12(startMin()) + ' - ' + label12(endMin()), 'Counting', MODE_EN[p.mode]]
+    ];
+    var y = 38;
+    info.forEach(function (row) {
+      [[row[0], row[1], M], [row[2], row[3], M + 95]].forEach(function (c) {
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); col(mute); doc.text(c[0], c[2], y);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11); col(ink); doc.text(c[1], c[2], y + 5.5);
+      });
+      y += 13;
+    });
 
-                const dateObj = new Date(r.date);
-                const dayName = daysInEnglish[dateObj.getDay()];
-                const hrs = Math.floor(r.otHours / 60);
-                const mins = r.otHours % 60;
+    y = 62;
+    var xDate = M + 3, xDay = M + 36, xOut = M + 56, xHm = M + 112, xHr = M + 140, xSn = M + TW - 3, RH = 5.6;
+    function head() {
+      doc.setFillColor(soft[0], soft[1], soft[2]); doc.rect(M, y, TW, 7, 'F');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); col(teal);
+      doc.text('DATE', xDate, y + 4.8); doc.text('DAY', xDay, y + 4.8); doc.text('OUT TIME', xOut, y + 4.8);
+      doc.text('OT (H:MM)', xHm, y + 4.8, { align: 'right' }); doc.text('OT (HOURS)', xHr, y + 4.8, { align: 'right' });
+      doc.text('SNACK (SR)', xSn, y + 4.8, { align: 'right' });
+      y += 7;
+    }
+    head();
+    md.rows.forEach(function (r) {
+      if (y + RH > 280) { doc.addPage(); y = 16; head(); }
+      var ok = r.res.st === 'ok', ty = y + 4;
+      if (r.dow === HOLIDAY_DOW) { doc.setFillColor(hol[0], hol[1], hol[2]); doc.rect(M, y, TW, RH, 'F'); }
+      doc.setDrawColor(line[0], line[1], line[2]); doc.setLineWidth(0.15); doc.line(M, y + RH, M + TW, y + RH);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); col(ink);
+      doc.text(pad(r.d) + ' ' + EN_MONTHS[S.m] + ' ' + S.y, xDate, ty);
+      col(mute); doc.text(EN_DAYS[r.dow], xDay, ty);
+      col(ink); doc.text(ok ? r.res.label : '-', xOut, ty);
+      doc.text(ok && r.res.ot > 0 ? hm(r.res.ot) : '-', xHm, ty, { align: 'right' });
+      doc.setFont('helvetica', 'bold'); doc.text(ok && r.res.ot > 0 ? (r.res.ot / 60).toFixed(2) : '-', xHr, ty, { align: 'right' });
+      doc.setFont('helvetica', 'normal'); doc.text(r.snack ? money(sAmt) : '-', xSn, ty, { align: 'right' });
+      y += RH;
+    });
 
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-700/40 transition";
-                tr.innerHTML = `
-                    <td class="py-3 px-3">
-                        <div class="font-semibold text-white">${r.date}</div>
-                        <div class="text-[11px] text-slate-300">${dayName}</div>
-                    </td>
-                    <td class="py-3 px-3 font-mono font-medium text-slate-200">${r.leavingTime}</td>
-                    <td class="py-3 px-3 font-medium text-white">${hrs}h ${mins}m</td>
-                    <td class="py-3 px-3 font-semibold text-emerald-400">${r.otPay.toFixed(2)} SAR</td>
-                    <td class="py-3 px-3 font-semibold text-amber-400">${r.food} SAR</td>
-                    <td class="py-3 px-3 text-right space-x-2 no-print">
-                        <button onclick="editRecord(${records.indexOf(r)})" class="text-[11px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-lg hover:bg-blue-500/30">Edit</button>
-                        <button onclick="deleteRecord(${records.indexOf(r)})" class="text-[11px] bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-lg hover:bg-red-500/30">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+    if (y + 31 > 285) { doc.addPage(); y = 10; }
+    y += 6;
+    var pay = rate > 0 ? md.tot / 60 * rate : 0;
+    doc.setFillColor(soft[0], soft[1], soft[2]); doc.rect(M, y, TW, 24, 'F');
+    function block(x, align, label, value, subtext) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8); col(teal); doc.text(label, x, y + 6, { align: align });
+      doc.setFontSize(14); col(ink); doc.text(value, x, y + 13.5, { align: align });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); col(mute); doc.text(subtext, x, y + 18.5, { align: align });
+    }
+    block(M + 4, 'left', 'TOTAL OVERTIME', hrs(md.tot) + ' hours', hm(md.tot) + ' | ' + md.days + ' OT day' + (md.days === 1 ? '' : 's'));
+    block(M + 66, 'left', 'SNACK ALLOWANCE', money(md.snackTotal) + ' SR', md.snackDays + ' day' + (md.snackDays === 1 ? '' : 's') + ' x ' + money(sAmt) + ' SR');
+    block(M + TW - 4, 'right', 'OT PAY', rate > 0 ? money(pay) + ' SR' : '-', rate > 0 ? 'Rate ' + money(rate) + ' SR per hour' : 'No rate set');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); col(mute);
+    doc.text('Friday: all hours from duty start count as overtime. Snack allowance: out at or after ' + label12(snackMin()) + '.', M, 288);
+    doc.text('Prepared on ' + now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), M, 292.5);
+    return doc.output('arraybuffer');
+  }
 
-            const totH = Math.floor(totalMins / 60);
-            const totM = totalMins % 60;
-            const totDec = (totalMins / 60).toFixed(2);
+  var dlP = Promise.resolve({
+    save: function (req) {
+      return new Promise(function (resolve, reject) {
+        try {
+          var blob = req.data instanceof Blob ? req.data : new Blob([req.data]);
+          var url = URL.createObjectURL(blob), a = document.createElement('a');
+          a.href = url; a.download = req.filename; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+          resolve({ status: 'saved' });
+        } catch (e) { reject({ code: 'unavailable' }); }
+      });
+    }
+  });
+  dlP.then(function (d) {
+    if (!d) {
+      $('btnXlsx').disabled = true; $('btnPdf').disabled = true;
+      $('dlnote').textContent = 'Downloads are not available in this view. Open the page in the Claude app or on claude.ai.';
+    }
+  });
 
-            document.getElementById('totalOtHours').innerText = `${totH}h ${totM}m`;
-            document.getElementById('totalOtDecimal').innerText = `${totDec} Hours (Decimal)`;
-            document.getElementById('totalOtPay').innerText = totalPay.toFixed(2) + " SAR";
-            document.getElementById('totalFood').innerText = totalFood.toFixed(2) + " SAR";
-            document.getElementById('recordCountBadge').innerText = `${filtered.length} Records`;
-        }
+  var toastT;
+  function toast(msg) {
+    var el = $('toast'); el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove('show'); }, 3400);
+  }
+  async function doExport(kind) {
+    var md = monthData();
+    if (S.sample || !md.rows.some(function (r) { return r.res.st === 'ok'; })) {
+      toast('Enter your own times first, then download.'); return;
+    }
+    var dl = await dlP;
+    if (!dl) { toast('Downloads are not available in this view.'); return; }
+    try {
+      var data;
+      if (kind === 'xlsx') { if (!window.XLSX) throw { code: 'lib' }; data = makeXlsx(); }
+      else { if (!(window.jspdf && window.jspdf.jsPDF)) throw { code: 'lib' }; data = makePdf(); }
+      var res = await dl.save({ filename: 'Overtime_' + EN_MONTHS[S.m] + '-' + S.y + '.' + kind, data: data });
+      toast(res && res.status === 'delivered' ? 'File sent.' : 'File saved.');
+    } catch (e) {
+      if (e && e.code === 'declined') toast('Download cancelled.');
+      else if (e && e.code === 'rate_limited') toast('Please wait a moment and try again.');
+      else if (e && e.code === 'lib') toast('The file maker could not load. Check your connection and reload.');
+      else toast('Could not download the file.');
+    }
+  }
 
-        function clearFilter() {
-            document.getElementById('filterMonth').value = '';
-            renderTable();
-        }
+  /* Sync: private copy in your Google Sheet, through your Apps Script link */
+  function gsUrl() { try { return (localStorage.getItem('ot-gs-url') || '').trim(); } catch (e) { return ''; } }
+  var SETTING_FIELDS = { fName: 'name', fId: 'id', fDept: 'dept', fStart: 'start', fEnd: 'end', fMode: 'mode', fRate: 'rate', fSnack: 'snack', fSnackAfter: 'snackAfter' };
+  var sync = { on: false, busy: false, again: false, timer: null };
+  function setSync(state, text) { var el = $('sync'); el.dataset.s = state; el.textContent = text; }
+  function syncKey() { try { return (localStorage.getItem('ot-sync-key') || '').trim(); } catch (e) { return ''; } }
+  function syncSettingsInputs() {
+    for (var id in SETTING_FIELDS) { var el = $(id); if (el !== document.activeElement) el.value = S.profile[SETTING_FIELDS[id]] || ''; }
+  }
+  function queueSync() {
+    if (!sync.on || S.sample) return;
+    setSync('wait', 'Saving…');
+    clearTimeout(sync.timer); sync.timer = setTimeout(flush, 900);
+  }
+  async function flush() {
+    if (!sync.on) return;
+    if (sync.busy) { sync.again = true; return; }
+    var o = backupObj();
+    if (!hasBackupData(o)) { setSync('ok', 'Connected to Google'); return; }
+    sync.busy = true;
+    try {
+      do {
+        sync.again = false;
+        var r = await fetch(gsUrl(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'ot_save', user: syncKey(), data: backupObj() }) });
+        var j = await r.json();
+        if (!j || j.ok !== true) throw new Error('save');
+      } while (sync.again);
+      var d = new Date();
+      setSync('ok', 'Synced to Google · ' + label12(d.getHours() * 60 + d.getMinutes()));
+    } catch (e) {
+      setSync('warn', 'Saved on this device. Google sync failed, tap to retry.');
+    } finally { sync.busy = false; }
+  }
+  function mergeRemote(o) {
+    if (!o || typeof o !== 'object' || !o.months) return false;
+    var any = false, fresh = S.sample || !Object.keys(S.months).some(function (k) { return Object.keys(S.months[k] || {}).length; });
+    if (S.sample && Object.keys(o.months).length) { S.sample = false; S.months = {}; }
+    Object.keys(o.months).forEach(function (k) {
+      if (!/^\d{4}-\d{2}$/.test(k)) return;
+      var src = o.months[k] || {}, dst = S.months[k] || (S.months[k] = {});
+      Object.keys(src).forEach(function (d) {
+        var day = +d, v = src[d];
+        if (day >= 1 && day <= 31 && typeof v === 'string' && v.length <= 20 && dst[day] === undefined) { dst[day] = v; any = true; }
+      });
+    });
+    var P = o.profile;
+    if (P && typeof P === 'object') {
+      ['name', 'id', 'dept', 'rate', 'snack'].forEach(function (f) { if (typeof P[f] === 'string' && P[f].length <= 60 && (fresh || !S.profile[f])) { S.profile[f] = P[f]; any = true; } });
+      if (fresh) {
+        ['start', 'end', 'snackAfter'].forEach(function (f) { if (typeof P[f] === 'string' && /^\d{1,2}:\d{2}$/.test(P[f])) S.profile[f] = P[f]; });
+        if (P.mode === 'exact' || P.mode === 'half' || P.mode === 'hour') S.profile.mode = P.mode;
+      }
+    }
+    return any;
+  }
+  async function pull() {
+    var k = syncKey(); if (!k || !gsUrl()) return;
+    setSync('wait', 'Syncing…');
+    try {
+      var r = await fetch(gsUrl() + '?action=ot_get&user=' + encodeURIComponent(k));
+      var j = await r.json();
+      if (!j || j.ok !== true) throw new Error('get');
+      sync.on = true;
+      if (j.data && mergeRemote(j.data)) { saveLocal(); syncSettingsInputs(); $('fMode').value = S.profile.mode; showMonth(); }
+      flush();
+    } catch (e) {
+      sync.on = true;
+      setSync('warn', 'Could not reach Google. Saved on this device, tap to retry.');
+    }
+  }
+  function initSync() {
+    var fs = $('fSync'), fg = $('fGs'); fs.value = syncKey(); fg.value = gsUrl();
+    var NEED = 'Add your Google script link and sync key in Settings to back up';
+    function start() { sync.on = false; if (syncKey() && gsUrl()) pull(); else setSync('local', NEED); }
+    fs.addEventListener('change', function () { try { localStorage.setItem('ot-sync-key', fs.value.trim()); } catch (e) {} start(); });
+    fg.addEventListener('change', function () { try { localStorage.setItem('ot-gs-url', fg.value.trim()); } catch (e) {} start(); });
+    $('sync').addEventListener('click', function () {
+      if (syncKey() && gsUrl()) pull(); else { $('settings').open = true; (gsUrl() ? fs : fg).focus(); }
+    });
+    window.addEventListener('online', function () { if (sync.on) flush(); });
+    start();
+  }
 
-        function exportCSV() {
-            let csv = "ID,Date,Leaving Time,OT Hours (Mins),OT Pay (SAR),Food Allowance (SAR)\n";
-            records.forEach(r => {
-                csv += `"${r.id}","${r.date}","${r.leavingTime}",${r.otHours},${r.otPay},${r.food}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `overtime_report_${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-        }
+  /* Backup: move entries between devices with a file or a pasted code */
+  var CODE_PREFIX = 'OTBACKUP1:';
+  function backupObj() {
+    var months = {};
+    if (!S.sample) for (var k in S.months) { var e = S.months[k]; if (e && Object.keys(e).length) months[k] = e; }
+    return { app: 'overtime-calculator', v: 1, saved: new Date().toISOString(), profile: S.profile, months: months };
+  }
+  function mergeBackup(obj) {
+    if (!obj || typeof obj !== 'object' || obj.app !== 'overtime-calculator' || !obj.months || typeof obj.months !== 'object') throw new Error('bad');
+    var n = 0;
+    if (S.sample) { S.sample = false; S.months = {}; }
+    Object.keys(obj.months).forEach(function (k) {
+      var src = obj.months[k];
+      if (!/^\d{4}-\d{2}$/.test(k) || !src || typeof src !== 'object') return;
+      var dst = S.months[k] || (S.months[k] = {});
+      Object.keys(src).forEach(function (d) {
+        var day = +d, v = src[d];
+        if (day >= 1 && day <= 31 && typeof v === 'string' && v.length <= 20) { dst[day] = v; n++; }
+      });
+    });
+    var P = obj.profile;
+    if (P && typeof P === 'object') {
+      ['name', 'id', 'dept', 'rate', 'snack'].forEach(function (f) { if (typeof P[f] === 'string' && P[f].length <= 60) S.profile[f] = P[f]; });
+      ['start', 'end', 'snackAfter'].forEach(function (f) { if (typeof P[f] === 'string' && /^\d{1,2}:\d{2}$/.test(P[f])) S.profile[f] = P[f]; });
+      if (P.mode === 'exact' || P.mode === 'half' || P.mode === 'hour') S.profile.mode = P.mode;
+    }
+    syncSettingsInputs(); buildRows(); renderSummary(); save();
+    return n;
+  }
+  function importText(txt) {
+    try {
+      txt = String(txt || '').trim();
+      if (txt.indexOf(CODE_PREFIX) === 0) txt = txt.slice(CODE_PREFIX.length);
+      var n = mergeBackup(JSON.parse(txt));
+      toast(n + ' day' + (n === 1 ? '' : 's') + ' imported.');
+      return true;
+    } catch (e) { toast('That backup could not be read. Copy the whole code or file again.'); return false; }
+  }
+  function hasBackupData(o) { return Object.keys(o.months).length > 0; }
+  async function saveBackupFile() {
+    var o = backupObj();
+    if (!hasBackupData(o)) { toast('Enter some times first, then make a backup.'); return; }
+    var dl = await dlP;
+    if (!dl) { toast('File download is not available here. Use Copy backup code.'); return; }
+    try {
+      await dl.save({ filename: 'Overtime-backup-' + now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + '.json', data: JSON.stringify(o) });
+      toast('Backup file saved.');
+    } catch (e) { toast(e && e.code === 'declined' ? 'Download cancelled.' : 'Could not save the file.'); }
+  }
+  async function copyBackupCode() {
+    var o = backupObj();
+    if (!hasBackupData(o)) { toast('Enter some times first, then make a backup.'); return; }
+    var code = CODE_PREFIX + JSON.stringify(o), box = $('codeOut');
+    box.hidden = false; box.value = code;
+    try { await navigator.clipboard.writeText(code); toast('Backup code copied. Paste it on the other device.'); }
+    catch (e) { box.focus(); box.select(); toast('Select and copy the code shown below.'); }
+  }
+  function loadBackupFile(f) {
+    if (!f) return;
+    if (f.size > 2 * 1024 * 1024) { toast('That file is too large for a backup.'); return; }
+    var rd = new FileReader();
+    rd.onload = function () { importText(rd.result); };
+    rd.onerror = function () { toast('Could not read that file.'); };
+    rd.readAsText(f);
+  }
 
-        async function syncToCloud() {
-            const timeText = document.getElementById('lastSyncTime');
-            timeText.innerText = "Syncing to Cloud...";
-            try {
-                await fetch(HARDCODED_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(records)
-                });
-                timeText.innerText = `Last Saved: ${new Date().toLocaleTimeString()}`;
-            } catch (e) {
-                console.error("Cloud sync error", e);
-                timeText.innerText = "Sync Failed";
-            }
-        }
+  /* USB data file: the file on the USB is the master copy (Chrome and Edge on a computer) */
+  var USB_OK = !!(window.showSaveFilePicker && window.showOpenFilePicker);
+  var usb = { h: null, saved: null, timer: null, busy: false, again: false };
+  var PICK_TYPES = [{ description: 'Overtime data', accept: { 'application/json': ['.json'] } }];
+  function setUsb(state, text) { var el = $('usbStatus'); el.dataset.s = state; el.textContent = text; }
+  function idb(fn) {
+    return new Promise(function (res) {
+      try {
+        var r = indexedDB.open('ot-calc-usb', 1);
+        r.onupgradeneeded = function () { r.result.createObjectStore('h'); };
+        r.onsuccess = function () { try { fn(r.result, res); } catch (e) { res(null); } };
+        r.onerror = function () { res(null); };
+      } catch (e) { res(null); }
+    });
+  }
+  function idbPut(h) { return idb(function (db, res) { var t = db.transaction('h', 'readwrite'); t.objectStore('h').put(h, 'file'); t.oncomplete = function () { res(true); }; t.onerror = function () { res(null); }; }); }
+  function idbGet() { return idb(function (db, res) { var q = db.transaction('h').objectStore('h').get('file'); q.onsuccess = function () { res(q.result || null); }; q.onerror = function () { res(null); }; }); }
 
-        async function syncFromCloud() {
-            const timeText = document.getElementById('lastSyncTime');
-            timeText.innerText = "Fetching from Cloud...";
-            try {
-                const res = await fetch(HARDCODED_SCRIPT_URL);
-                const data = await res.json();
-                if(Array.isArray(data)) {
-                    records = data;
-                    renderTable();
-                }
-                timeText.innerText = `Last Updated: ${new Date().toLocaleTimeString()}`;
-            } catch(e) {
-                console.error("Fetch from cloud error", e);
-                timeText.innerText = "Fetch Failed";
-            }
-        }
-    </script>
-</body>
-</html>
+  function showReconnect(h) { usb.saved = h; $('btnUsbRe').hidden = false; }
+  async function usbWrite() {
+    if (!usb.h) return;
+    if (usb.busy) { usb.again = true; return; }
+    usb.busy = true;
+    try {
+      do {
+        usb.again = false;
+        var w = await usb.h.createWritable();
+        await w.write(JSON.stringify(backupObj(), null, 1)); await w.close();
+      } while (usb.again);
+      var d = new Date();
+      setUsb('ok', 'Saved to USB file "' + usb.h.name + '" at ' + label12(d.getHours() * 60 + d.getMinutes()));
+    } catch (e) {
+      showReconnect(usb.h); usb.h = null;
+      setUsb('warn', 'Could not write to the USB file. Check the USB is plugged in, then press Reconnect. Entries are still kept in this browser.');
+    } finally { usb.busy = false; }
+  }
+  window.__queueUsb = function () {
+    if (!usb.h) return;
+    setUsb('wait', 'Saving to USB…');
+    clearTimeout(usb.timer); usb.timer = setTimeout(usbWrite, 600);
+  };
+  async function usbAttach(h, loadFirst) {
+    var loaded = false;
+    if (loadFirst) {
+      var txt = (await (await h.getFile()).text()).trim();
+      if (txt) {
+        var o = JSON.parse(txt);
+        S.sample = false; S.months = {};
+        mergeBackup(o); loaded = true;
+      }
+    }
+    usb.h = h; usb.saved = h; $('btnUsbRe').hidden = true;
+    idbPut(h);
+    await usbWrite();
+    if (loaded) toast('Loaded your data from the USB file.');
+  }
+  async function usbOpen() {
+    try {
+      var hs = await window.showOpenFilePicker({ types: PICK_TYPES, multiple: false });
+      await usbAttach(hs[0], true);
+    } catch (e) { if (!e || e.name !== 'AbortError') toast('Could not open that file. Pick the Overtime-Data.json file.'); }
+  }
+  async function usbCreate() {
+    try {
+      var h = await window.showSaveFilePicker({ suggestedName: 'Overtime-Data.json', types: PICK_TYPES });
+      await usbAttach(h, false);
+    } catch (e) { if (!e || e.name !== 'AbortError') toast('Could not create the file.'); }
+  }
+  async function usbReconnect() {
+    var h = usb.saved; if (!h) return;
+    try {
+      var perm = await h.requestPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') { toast('Permission was not given.'); return; }
+      await usbAttach(h, true);
+    } catch (e) { toast('Could not reconnect. Use Open data file from USB.'); }
+  }
+  function initUsb() {
+    if (!USB_OK) {
+      setUsb('warn', 'This browser cannot write to a USB file. Use Chrome or Edge on a computer, or use the backup buttons below.');
+      $('btnUsbOpen').disabled = true; $('btnUsbCreate').disabled = true; return;
+    }
+    $('btnUsbOpen').addEventListener('click', usbOpen);
+    $('btnUsbCreate').addEventListener('click', usbCreate);
+    $('btnUsbRe').addEventListener('click', usbReconnect);
+    idbGet().then(function (h) {
+      if (!h) return;
+      showReconnect(h);
+      setUsb('warn', 'Last used file: "' + h.name + '". Plug in the USB and press Reconnect to load it before typing.');
+    });
+  }
+
+  /* Wire up */
+  load();
+  bind('fName', 'name'); bind('fId', 'id'); bind('fDept', 'dept');
+  bind('fStart', 'start', refresh); bind('fEnd', 'end', refresh);
+  var modeEl = $('fMode'); modeEl.value = S.profile.mode;
+  modeEl.addEventListener('change', function () { S.profile.mode = modeEl.value; refresh(); save(); });
+  bind('fRate', 'rate', renderSummary);
+  bind('fSnack', 'snack', refresh); bind('fSnackAfter', 'snackAfter', refresh);
+  $('settings').open = window.matchMedia('(min-width: 940px)').matches;
+
+  $('prevM').addEventListener('click', function () { S.m--; if (S.m < 0) { S.m = 11; S.y--; } showMonth(); });
+  $('nextM').addEventListener('click', function () { S.m++; if (S.m > 11) { S.m = 0; S.y++; } showMonth(); });
+  $('todayBtn').addEventListener('click', function () {
+    S.y = now.getFullYear(); S.m = now.getMonth(); showMonth();
+    var r = rowEls[now.getDate()]; if (r) r.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  });
+  $('clearSample').addEventListener('click', function () { endSample(null); renderSummary(); save(); });
+  var confirmT;
+  $('clearMonth').addEventListener('click', function () {
+    var b = $('clearMonth');
+    if (b.dataset.arm !== '1') {
+      b.dataset.arm = '1'; b.textContent = 'Tap again to confirm';
+      clearTimeout(confirmT); confirmT = setTimeout(function () { b.dataset.arm = ''; b.textContent = 'Clear this month'; }, 4000);
+      return;
+    }
+    clearTimeout(confirmT); b.dataset.arm = ''; b.textContent = 'Clear this month';
+    if (S.sample) S.sample = false;
+    S.months[key()] = {};
+    for (var d in rowEls) rowEls[d].input.value = '';
+    paintAll(false); renderSummary(); save(); toast('Month cleared.');
+  });
+  $('btnXlsx').addEventListener('click', function () { doExport('xlsx'); });
+  $('btnBkFile').addEventListener('click', saveBackupFile);
+  $('btnBkCode').addEventListener('click', copyBackupCode);
+  $('btnLoadFile').addEventListener('click', function () { $('fileIn').click(); });
+  $('fileIn').addEventListener('change', function (ev) { loadBackupFile(ev.target.files[0]); ev.target.value = ''; });
+  $('btnImportCode').addEventListener('click', function () { if (importText($('codeIn').value)) $('codeIn').value = ''; });
+  $('btnPdf').addEventListener('click', function () { doExport('pdf'); });
+
+  showMonth();
+  initSync();
+  initUsb();
+})();
+</script>
