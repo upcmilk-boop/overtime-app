@@ -134,22 +134,37 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
         <div class="field"><label>Employee ID</label><input id="s_empId"></div>
         <div class="field"><label>Department</label><input id="s_dept" placeholder="Quality Control"></div>
       </div>
-      <div class="row2">
-        <div class="field"><label>Duty start</label><input type="time" id="s_start"></div>
-        <div class="field"><label>Duty end</label><input type="time" id="s_end"></div>
-      </div>
       
+      <div class="row2">
+        <div class="field"><label>Normal Duty start</label><input type="time" id="s_start"></div>
+        <div class="field"><label>Normal Duty end</label><input type="time" id="s_end"></div>
+      </div>
+
+      <div class="field"><label>Snack time (Normal)</label><input type="time" id="s_snackTime"></div>
+      
+      <div class="row2">
+        <div class="field"><label>OT rate per hour (SR)</label><input type="number" step="0.01" id="s_rate" placeholder="optional"></div>
+        <div class="field"><label>Snack per day (SR)</label><input type="number" id="s_snack"></div>
+      </div>
+
       <!-- Ramadan Mode Settings -->
       <div class="field-check">
         <input type="checkbox" id="s_isRamadan">
         <label for="s_isRamadan">Ramadan / Fasting Month Mode</label>
       </div>
-      <div class="field" id="ramadanEndWrapper" style="display:none;">
-        <label>Ramadan Duty End (e.g. 3:00 PM)</label>
-        <input type="time" id="s_ramadanEnd">
+      
+      <div id="ramadanSettings" style="display:none; border-top:1px dashed var(--line); margin-top:12px; padding-top:8px;">
+        <div class="row2">
+          <div class="field"><label>Rmd Start (12:00 PM)</label><input type="time" id="s_ramadanStart"></div>
+          <div class="field"><label>Rmd End (6:00 PM)</label><input type="time" id="s_ramadanEnd"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>OT starts after Ifter (7:00 PM)</label><input type="time" id="s_ramadanOTStart"></div>
+          <div class="field"><label>Rmd Snack (SR)</label><input type="number" id="s_ramadanSnack"></div>
+        </div>
       </div>
 
-      <div class="row2">
+      <div class="row2" style="margin-top:12px">
         <div class="field"><label>Weekly off</label>
           <select id="s_offDay">
             <option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option>
@@ -164,13 +179,8 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
             <option value="near15">Nearest 15 min</option>
           </select></div>
       </div>
-      <div class="row2">
-        <div class="field"><label>OT rate per hour (SR)</label><input type="number" step="0.01" id="s_rate" placeholder="optional"></div>
-        <div class="field"><label>Snack per day (SR)</label><input type="number" id="s_snack"></div>
-      </div>
-      <div class="field"><label>Snack allowance when you leave at or after</label><input type="time" id="s_snackTime"></div>
-      
-      <div class="field"><label>Google sync key (your password)</label><input id="s_key" placeholder="e.g. karim-2026-xyz"></div>
+
+      <div class="field" style="margin-top:20px"><label>Google sync key (your password)</label><input id="s_key" placeholder="e.g. karim-2026-xyz"></div>
       <button class="btn primary" id="syncNow" style="width:100%;margin-top:12px">Sync now</button>
     </details>
   </aside>
@@ -206,9 +216,11 @@ const LS = { s:'ot_settings', e:'ot_entries', p:'ot_pending', d:'ot_settings_dir
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const FULLDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const DEF = { name:'', empId:'', dept:'', start:'08:00', end:'17:00', offDay:'5', rounding:'exact',
-              rate:'', snack:'17', snackTime:'18:00', isRamadan: 'false', ramadanEnd: '15:00', url:DEFAULT_SCRIPT_URL, key:'' };
+              rate:'', snack:'17', snackTime:'18:00', isRamadan: 'false',
+              ramadanStart: '12:00', ramadanEnd: '18:00', ramadanOTStart: '19:00', ramadanSnack: '25',
+              url:DEFAULT_SCRIPT_URL, key:'' };
 const FIELDS = Object.keys(DEF);
-const CALC_FIELDS = ['start','end','offDay','rounding','snack','snackTime', 'isRamadan', 'ramadanEnd'];
+const CALC_FIELDS = ['start','end','offDay','rounding','snack','snackTime', 'isRamadan', 'ramadanStart', 'ramadanEnd', 'ramadanOTStart', 'ramadanSnack'];
 
 const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
 let S = { ...DEF, ...load(LS.s, {}) };
@@ -236,8 +248,8 @@ const fmtHM = m => { const h = Math.floor(m / 60), mi = Math.round(m % 60); retu
 
 let view = new Date(); view.setDate(1);
 
-// 💡 নতুন আপডেট: রাত ১২টা এবং তার পরের সময়গুলো সঠিকভাবে ডিটেক্ট করার লজিক
-function parseOut(str, isRmd) {
+// রাত ১২টা এবং তার পরের সময়গুলো সঠিকভাবে ডিটেক্ট করার লজিক
+function parseOut(str) {
   str = String(str).trim().replace(':', '.');
   const m = str.match(/^(\d{1,2})(?:\.(\d{1,2}))?$/);
   if (!m) return NaN;
@@ -245,22 +257,18 @@ function parseOut(str, isRmd) {
   const mi = m[2] ? +(m[2].length === 1 ? m[2] + '0' : m[2]) : 0;
   if (mi > 59 || h > 29) return NaN;
 
-  // যদি রমজান মোড চালু থাকে এবং কেউ ৩টা বা ৪টা লিখে, তবে সেটা বিকাল হিসেবে ধরা হবে
-  if (isRmd && h >= 3 && h <= 4) {
+  // 6, 7, 8, 9, 10, 11 মানে সন্ধ্যা/রাত (17:00 - 23:00)
+  if (h >= 5 && h <= 11) {
       h += 12; 
   } 
-  // ১২ টা বা ০ টা লিখলে সেটা রাত ১২:০০ (অর্থাৎ ২৪:০০) ধরা হবে
+  // 12 বা 0 মানে রাত ১২টা (24:00)
   else if (h === 0 || h === 12) {
       h = 24; 
   } 
-  // ১ থেকে ৪ লিখলে সেটা পরদিনের রাত ১টা থেকে ৪টা ধরা হবে (২৫:০০ - ২৮:০০)
+  // 1 থেকে 4 মানে পরদিনের রাত ১টা থেকে ৪টা (25:00 - 28:00)
   else if (h >= 1 && h <= 4) {
       h += 24; 
   } 
-  // ৫ থেকে ১১ লিখলে সেটা বিকাল/সন্ধ্যা ৫টা থেকে ১১টা ধরা হবে (১৭:০০ - ২৩:০০)
-  else if (h >= 5 && h <= 11) {
-      h += 12; 
-  }
   
   return h * 60 + mi;
 }
@@ -279,16 +287,20 @@ function calc(date) {
   if (!raw) return { empty: true };
   
   const isRmd = S.isRamadan === 'true';
-  const out = parseOut(raw, isRmd);
+  const out = parseOut(raw);
   if (isNaN(out)) return { bad: true };
   
   const off = new Date(date + 'T00:00:00').getDay() === +S.offDay;
   
-  // রমজান মোড অন থাকলে ডিউটি শেষের সময় বদলে যাবে
-  const activeDutyEnd = isRmd ? S.ramadanEnd : S.end;
-  const base = off ? toMin(S.start) : toMin(activeDutyEnd);
+  // রমজান এবং নরমাল মুডের জন্য ভ্যালুগুলো ঠিক করা
+  const activeStart = isRmd ? S.ramadanStart : S.start;
+  const activeOTStart = isRmd ? S.ramadanOTStart : S.end; // রমজানে ৭টার পর থেকে ওটি
+  const activeSnack = isRmd ? +S.ramadanSnack : +S.snack;
+
+  // ছুটির দিন হলে ডিউটি শুরুর সময় থেকে ওটি গননা হবে, নাহলে ওটি শুরুর সময় থেকে
+  const base = off ? toMin(activeStart) : toMin(activeOTStart);
   
-  return { ot: roundMin(Math.max(0, out - base)), snack: out >= toMin(S.snackTime) ? (+S.snack || 0) : 0 };
+  return { ot: roundMin(Math.max(0, out - base)), snack: out >= toMin(S.snackTime) ? (activeSnack || 0) : 0 };
 }
 
 function monthData() {
@@ -303,11 +315,14 @@ function monthData() {
 function helpText() {
   const off = +S.offDay;
   const isRmd = S.isRamadan === 'true';
-  const activeEnd = isRmd ? S.ramadanEnd : S.end;
-  const ex = +((20 * 60 - toMin(S.start)) / 60).toFixed(2);
+  const activeEnd = isRmd ? S.ramadanOTStart : S.end;
   
-  let text = `Type the time you left. 6.30 means 6:30 PM. Type 12.30 for after midnight. `;
-  if(isRmd) text += `(Ramadan Mode Active: Duty ends at ${fmt12(S.ramadanEnd)}). `;
+  let text = `Type the time you left. 6.30 means 6:30 PM. After midnight, type 0.30. `;
+  if(isRmd) {
+      text += `(Ramadan Mode: OT starts after Ifter, i.e., ${fmt12(activeEnd)}). `;
+  } else {
+      text += `(Duty ends at ${fmt12(activeEnd)}). `;
+  }
   
   text += (off >= 0 ? `On ${FULLDAYS[off]} (weekly off) every hour from duty start counts as overtime. ` : '') + `Press Enter to jump to the next day.`;
   return text;
@@ -319,8 +334,8 @@ function render() {
   $('heroLbl').textContent = 'Total overtime · ' + mName;
   
   const isRmd = S.isRamadan === 'true';
-  const activeEnd = isRmd ? S.ramadanEnd : S.end;
-  $('dutyLbl').textContent = `Duty ${fmt12(S.start)} – ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`;
+  const activeEnd = isRmd ? S.ramadanOTStart : S.end;
+  $('dutyLbl').textContent = `Duty ${fmt12(isRmd ? S.ramadanStart : S.start)} – ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`;
   
   $('snTime').textContent = fmt12(S.snackTime);
   $('help').textContent = helpText();
@@ -400,7 +415,7 @@ function fillSettings() {
 
 function toggleRamadanUI() {
   const isChecked = $('s_isRamadan').checked;
-  $('ramadanEndWrapper').style.display = isChecked ? 'flex' : 'none';
+  $('ramadanSettings').style.display = isChecked ? 'block' : 'none';
 }
 
 FIELDS.forEach(f => {
@@ -532,11 +547,12 @@ $('xlsBtn').onclick = () => {
   const T = totals(), mName = $('monthLbl').textContent;
   
   const isRmd = S.isRamadan === 'true';
-  const activeEnd = isRmd ? S.ramadanEnd : S.end;
+  const activeStart = isRmd ? S.ramadanStart : S.start;
+  const activeEnd = isRmd ? S.ramadanOTStart : S.end;
   
   const rows = [
     ['Overtime Report', mName], ['Name', S.name], ['Employee ID', S.empId], ['Department', S.dept],
-    ['Duty', `${fmt12(S.start)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`], [],
+    ['Duty', `${fmt12(activeStart)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`], [],
     ['Date', 'Day', 'Time out', 'Overtime (h)', 'Overtime', 'Snack (SR)'],
     ...reportRows(T.md), [],
     ['Total', '', '', +(T.tot / 60).toFixed(2), fmtHM(T.tot), T.snTot]
@@ -552,13 +568,14 @@ $('pdfBtn').onclick = () => {
   const T = totals(), mName = $('monthLbl').textContent;
   
   const isRmd = S.isRamadan === 'true';
-  const activeEnd = isRmd ? S.ramadanEnd : S.end;
+  const activeStart = isRmd ? S.ramadanStart : S.start;
+  const activeEnd = isRmd ? S.ramadanOTStart : S.end;
   
   const doc = new window.jspdf.jsPDF();
   doc.setFontSize(16); doc.text('Overtime Report - ' + mName, 14, 16);
   doc.setFontSize(10);
   doc.text(`Name: ${S.name || '-'}    ID: ${S.empId || '-'}    Dept: ${S.dept || '-'}`, 14, 24);
-  doc.text(`Duty: ${fmt12(S.start)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}    Total OT: ${fmtH(T.tot)} h (${fmtHM(T.tot)})    Snack: ${T.snTot} SR` +
+  doc.text(`Duty: ${fmt12(activeStart)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}    Total OT: ${fmtH(T.tot)} h (${fmtHM(T.tot)})    Snack: ${T.snTot} SR` +
            (T.pay ? `    OT pay: ${T.pay} SR` : ''), 14, 30);
   doc.autoTable({
     startY: 36, head: [['Date', 'Day', 'Time out', 'OT (h)', 'OT', 'Snack (SR)']],
