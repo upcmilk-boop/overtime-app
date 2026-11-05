@@ -15,14 +15,27 @@
 body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:linear-gradient(160deg,#e6efee,#f3f6f6);color:var(--ink);min-height:100vh}
 .mono{font-family:'JetBrains Mono',monospace}
 .wrap{max-width:1180px;margin:0 auto;padding:20px}
+
+#gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:linear-gradient(160deg,#e6efee,#f3f6f6);padding:20px}
+#gate .gcard{background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px 30px;width:100%;max-width:400px;box-shadow:0 12px 40px rgba(20,60,55,.12);text-align:center}
+#gate .logo{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#2a8f7e,#155e52);display:grid;place-items:center;color:#fff;margin:0 auto 16px}
+#gate h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.4px}
+#gate h1 span{color:var(--teal)}
+#gate p{color:var(--muted);font-size:14px;line-height:1.6;margin:10px 0 20px}
+#gate input{width:100%;font:inherit;font-family:'JetBrains Mono',monospace;font-size:16px;text-align:center;padding:13px;border:1.5px solid var(--line);border-radius:14px;background:#f5f8f7;letter-spacing:.5px}
+#gate input:focus{outline:2px solid var(--teal);background:#fff}
+#gate .btn{width:100%;margin-top:12px;padding:13px;font-size:15px}
+#gate .err{color:var(--red);font-size:13px;font-weight:600;min-height:18px;margin:10px 0 0}
+#gate .fine{font-size:12px;color:var(--muted);margin-top:14px}
+body.locked .app{display:none}
+
 header.top{position:sticky;top:12px;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:22px;padding:16px 20px;box-shadow:0 8px 24px rgba(20,60,55,.08);margin-bottom:20px}
 .brand{display:flex;align-items:center;gap:14px}
 .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#2a8f7e,#155e52);display:grid;place-items:center;color:#fff;flex:none}
 .brand h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.5px}
 .brand h1 span{color:var(--teal)}
 .brand small{color:var(--muted);font-size:13px}
-.pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:#3d4b49;background:#f7faf9;max-width:440px;cursor:pointer;transition:0.2s;}
-.pill:hover{background:#fff;border-color:var(--teal);box-shadow:0 2px 8px rgba(20,60,55,.1);}
+.pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;color:#3d4b49;background:#f7faf9;max-width:440px}
 .dot{width:8px;height:8px;border-radius:50%;background:#7a8a87;flex:none}
 .pill.ok .dot{background:#27ae60}.pill.busy .dot{background:var(--amber)}.pill.err .dot{background:var(--red)}
 .grid{display:grid;grid-template-columns:350px 1fr;gap:20px;align-items:start}
@@ -47,6 +60,7 @@ header.top{position:sticky;top:12px;z-index:10;display:flex;align-items:center;j
 .note{font-size:13px;color:var(--muted);margin:10px 0 0;line-height:1.5}
 .btn{border:1.5px solid var(--teal);background:#fff;color:var(--teal-d);font:inherit;font-weight:700;padding:11px 14px;border-radius:12px;cursor:pointer;font-size:14px}
 .btn.primary{background:linear-gradient(180deg,#2a8f7e,#1a6b5e);color:#fff}
+.btn.danger{border-color:var(--red);color:var(--red)}
 .btn:hover{filter:brightness(.96)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 details.card summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none;display:flex;justify-content:space-between}
@@ -54,10 +68,13 @@ details.card summary::-webkit-details-marker{display:none}
 details.card summary::after{content:"+"}details[open].card summary::after{content:"−"}
 .field{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .field label{font-size:13px;font-weight:600;color:#3d4b49}
-.field input:not([type="checkbox"]),.field select{font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#f5f8f7;width:100%}
-.field-check{display:flex;align-items:center;gap:8px;margin-top:12px;background:#f5f8f7;padding:10px;border-radius:12px;border:1px solid var(--line)}
-.field-check input{width:18px;height:18px;accent-color:var(--teal)}
-.field-check label{font-size:14px;font-weight:600;margin:0;cursor:pointer}
+.field input,.field select{font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#f5f8f7;width:100%}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#3d4b49;cursor:pointer;margin-top:14px}
+.chk input{width:auto}
+.ramadan-box{border-left:3px solid var(--amber);padding-left:12px;margin-top:10px}
+.acct{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f5f8f7;border-radius:12px;padding:10px 12px;margin-top:12px}
+.acct .k{font-family:'JetBrains Mono',monospace;font-size:14px}
+.acct small{display:block;color:var(--muted);font-size:11px}
 .main{padding:0;overflow:hidden}
 .monthbar{display:flex;align-items:center;gap:8px;padding:14px}
 .monthbar h2{flex:1;text-align:center;margin:0;font-size:20px}
@@ -73,6 +90,8 @@ td.date span{font-size:12px;color:var(--muted)}
 tr.off{background:repeating-linear-gradient(45deg,#f6f8f8 0 8px,#eef2f2 8px 16px)}
 tr.today{background:var(--teal-l);box-shadow:inset 3px 0 var(--teal)}
 tr.today .badge.td{background:transparent;color:var(--teal-d)}
+tr.ram{box-shadow:inset 3px 0 #d68910}
+tr.ram .badge.rm{background:#fdf1dc;color:#9a6208}
 td input{font-family:'JetBrains Mono',monospace;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#f5f8f7;width:100%;max-width:240px}
 td input:focus{outline:2px solid var(--teal);background:#fff}
 td input.bad{border-color:var(--red);outline-color:var(--red)}
@@ -84,7 +103,21 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
 @media(max-width:900px){.grid{grid-template-columns:1fr}.big{font-size:44px}header.top{flex-wrap:wrap;position:static}.brand h1{font-size:21px}}
 </style>
 </head>
-<body>
+<body class="locked">
+
+<div id="gate">
+  <div class="gcard">
+    <div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+    <h1>Overtime <span>Calculator</span></h1>
+    <p>Enter your sync key to open your data.<br>Same key = same data on every device.</p>
+    <input id="gateKey" placeholder="your sync key" autocomplete="off">
+    <button class="btn primary" id="gateBtn">Open</button>
+    <div class="err" id="gateErr"></div>
+    <div class="fine">First time? Pick any secret code — that becomes your account. Keep it private.</div>
+  </div>
+</div>
+
+<div class="app">
 <div class="wrap">
 
 <header class="top">
@@ -92,7 +125,7 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
     <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
     <div><h1>Overtime <span>Calculator</span></h1><small id="dutyLbl"></small></div>
   </div>
-  <div class="pill" id="pill" onclick="openSettings()"><span class="dot"></span><span id="pillTxt"></span></div>
+  <div class="pill" id="pill"><span class="dot"></span><span id="pillTxt"></span></div>
 </header>
 
 <div class="grid">
@@ -124,7 +157,7 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
         <button class="btn primary" id="xlsBtn">↓ Excel</button>
         <button class="btn" id="pdfBtn">↓ PDF</button>
       </div>
-      <p class="note">Entries save in this browser and sync to your Google Sheet.</p>
+      <p class="note">Entries save in this browser and sync to your Google Sheet. Excel and PDF need an internet connection the first time the page opens.</p>
     </div>
 
     <details class="card" id="settingsBox">
@@ -134,37 +167,11 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
         <div class="field"><label>Employee ID</label><input id="s_empId"></div>
         <div class="field"><label>Department</label><input id="s_dept" placeholder="Quality Control"></div>
       </div>
-      
       <div class="row2">
-        <div class="field"><label>Normal Duty start</label><input type="time" id="s_start"></div>
-        <div class="field"><label>Normal Duty end</label><input type="time" id="s_end"></div>
+        <div class="field"><label>Duty start</label><input type="time" id="s_start"></div>
+        <div class="field"><label>Duty end</label><input type="time" id="s_end"></div>
       </div>
-
-      <div class="field"><label>Snack time (Normal)</label><input type="time" id="s_snackTime"></div>
-      
       <div class="row2">
-        <div class="field"><label>OT rate per hour (SR)</label><input type="number" step="0.01" id="s_rate" placeholder="optional"></div>
-        <div class="field"><label>Snack per day (SR)</label><input type="number" id="s_snack"></div>
-      </div>
-
-      <!-- Ramadan Mode Settings -->
-      <div class="field-check">
-        <input type="checkbox" id="s_isRamadan">
-        <label for="s_isRamadan">Ramadan / Fasting Month Mode</label>
-      </div>
-      
-      <div id="ramadanSettings" style="display:none; border-top:1px dashed var(--line); margin-top:12px; padding-top:8px;">
-        <div class="row2">
-          <div class="field"><label>Rmd Start (12:00 PM)</label><input type="time" id="s_ramadanStart"></div>
-          <div class="field"><label>Rmd End (6:00 PM)</label><input type="time" id="s_ramadanEnd"></div>
-        </div>
-        <div class="row2">
-          <div class="field"><label>OT starts after Ifter (7:00 PM)</label><input type="time" id="s_ramadanOTStart"></div>
-          <div class="field"><label>Rmd Snack (SR)</label><input type="number" id="s_ramadanSnack"></div>
-        </div>
-      </div>
-
-      <div class="row2" style="margin-top:12px">
         <div class="field"><label>Weekly off</label>
           <select id="s_offDay">
             <option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option>
@@ -179,8 +186,35 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
             <option value="near15">Nearest 15 min</option>
           </select></div>
       </div>
+      <div class="row2">
+        <div class="field"><label>OT rate per hour (SR)</label><input type="number" step="0.01" id="s_rate" placeholder="optional"></div>
+        <div class="field"><label>Snack per day (SR)</label><input type="number" id="s_snack"></div>
+      </div>
+      <div class="field"><label>Snack allowance when you leave at or after</label><input type="time" id="s_snackTime"></div>
 
-      <div class="field" style="margin-top:20px"><label>Google sync key (your password)</label><input id="s_key" placeholder="e.g. karim-2026-xyz"></div>
+      <label class="chk"><input type="checkbox" id="s_ramadanMode"> Ramadan schedule (separate duty hours)</label>
+      <div class="ramadan-box" id="ramadanBox" style="display:none">
+        <div class="field"><label>Duty start</label><input type="time" id="s_rStart"></div>
+        <div class="row2">
+          <div class="field"><label>Duty end / iftar starts</label><input type="time" id="s_rEnd"></div>
+          <div class="field"><label>Overtime counts after</label><input type="time" id="s_rOTAfter"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Snack after</label><input type="time" id="s_rSnackTime"></div>
+          <div class="field"><label>Snack (SR)</label><input type="number" id="s_rSnack"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>From date</label><input type="date" id="s_rFrom"></div>
+          <div class="field"><label>To date</label><input type="date" id="s_rTo"></div>
+        </div>
+        <p class="note">During this range, iftar time (e.g. 6–7 PM) is NOT counted as overtime. Overtime starts only after the time set in "Overtime counts after".</p>
+      </div>
+
+      <h3 style="margin-top:18px">Backup account</h3>
+      <div class="acct">
+        <div><span class="k" id="acctKey"></span><small>Your data is saved to Google Sheet under this key</small></div>
+        <button class="btn danger" id="logoutBtn" style="padding:8px 12px;flex:none">Log out</button>
+      </div>
       <button class="btn primary" id="syncNow" style="width:100%;margin-top:12px">Sync now</button>
     </details>
   </aside>
@@ -204,29 +238,31 @@ td input.bad{border-color:var(--red);outline-color:var(--red)}
   </section>
 </div>
 </div>
+</div>
 
 <script>
-// ==========================================================================================
-// ✅ আপনার Google Apps Script Web App URL এখানে সেট করা আছে
-// ==========================================================================================
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxrOeMJtWXV0icq-4alYL-78Leip74q1IXsPKDl3fcEAZ9d6TbR0iU6yK3523QxfjreBg/exec'; 
-// ==========================================================================================
+/* ============================================================
+   ✅ তোমার Google Apps Script Web App URL
+   ============================================================ */
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxrOeMJtWXV0icq-4alYL-78Leip74q1IXsPKDl3fcEAZ9d6TbR0iU6yK3523QxfjreBg/exec';
 
-const LS = { s:'ot_settings', e:'ot_entries', p:'ot_pending', d:'ot_settings_dirty' };
+const LS = { s:'ot_settings', e:'ot_entries', p:'ot_pending', d:'ot_settings_dirty', k:'ot_key' };
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const FULLDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const DEF = { name:'', empId:'', dept:'', start:'08:00', end:'17:00', offDay:'5', rounding:'exact',
-              rate:'', snack:'17', snackTime:'18:00', isRamadan: 'false',
-              ramadanStart: '12:00', ramadanEnd: '18:00', ramadanOTStart: '19:00', ramadanSnack: '25',
-              url:DEFAULT_SCRIPT_URL, key:'' };
-const FIELDS = Object.keys(DEF);
-const CALC_FIELDS = ['start','end','offDay','rounding','snack','snackTime', 'isRamadan', 'ramadanStart', 'ramadanEnd', 'ramadanOTStart', 'ramadanSnack'];
+              rate:'', snack:'17', snackTime:'18:00',
+              ramadanMode:false, rStart:'12:00', rEnd:'18:00', rOTAfter:'19:00',
+              rSnackTime:'19:00', rSnack:'25', rFrom:'', rTo:'' };
+const FIELDS = ['name','empId','dept','start','end','offDay','rounding','rate','snack','snackTime',
+                'ramadanMode','rStart','rEnd','rOTAfter','rSnackTime','rSnack','rFrom','rTo'];
+const CALC_FIELDS = ['start','end','offDay','rounding','snack','snackTime',
+                     'ramadanMode','rStart','rEnd','rOTAfter','rSnackTime','rSnack','rFrom','rTo'];
 
 const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+let KEY = localStorage.getItem(LS.k) || '';
 let S = { ...DEF, ...load(LS.s, {}) };
-if (!S.url && DEFAULT_SCRIPT_URL) S.url = DEFAULT_SCRIPT_URL;
-let E = load(LS.e, {});          
-let P = load(LS.p, {});          
+let E = load(LS.e, {});
+let P = load(LS.p, {});
 let settingsDirty = load(LS.d, false);
 let settingsVer = 0;
 
@@ -245,10 +281,11 @@ const toMin = t => { const [h, m] = String(t || '0:0').split(':').map(Number); r
 const fmt12 = t => { const x = toMin(t); let h = Math.floor(x / 60) % 24; const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${pad(x % 60)} ${ap}`; };
 const fmtH = m => String(+(m / 60).toFixed(2));
 const fmtHM = m => { const h = Math.floor(m / 60), mi = Math.round(m % 60); return h && mi ? `${h} h ${mi} min` : h ? `${h} h` : `${mi} min`; };
+const mask = k => k.length > 4 ? k.slice(0, 2) + '••••' + k.slice(-2) : '••••';
 
 let view = new Date(); view.setDate(1);
 
-// রাত ১২টা এবং তার পরের সময়গুলো সঠিকভাবে ডিটেক্ট করার লজিক
+// ✅ "12" = রাত ১২টা (midnight) | "0.30" = রাত ১২.৩০ | "6.30" = সন্ধ্যা ৬.৩০
 function parseOut(str) {
   str = String(str).trim().replace(':', '.');
   const m = str.match(/^(\d{1,2})(?:\.(\d{1,2}))?$/);
@@ -256,15 +293,8 @@ function parseOut(str) {
   let h = +m[1];
   const mi = m[2] ? +(m[2].length === 1 ? m[2] + '0' : m[2]) : 0;
   if (mi > 59 || h > 29) return NaN;
-
-  if (h >= 5 && h <= 11) {
-      h += 12; 
-  } else if (h === 0 || h === 12) {
-      h = 24; 
-  } else if (h >= 1 && h <= 4) {
-      h += 24; 
-  } 
-  
+  if (h === 0 || h === 12) h = 24;      // 0 বা 12 => রাত ১২টা (midnight)
+  else if (h < 12) h += 12;             // 1-11 => PM
   return h * 60 + mi;
 }
 
@@ -277,23 +307,28 @@ function roundMin(m) {
   }
 }
 
+function isRamadan(dateStr) {
+  if (!S.ramadanMode) return false;
+  const d = new Date(dateStr + 'T00:00:00');
+  const from = S.rFrom ? new Date(S.rFrom + 'T00:00:00') : null;
+  const to = S.rTo ? new Date(S.rTo + 'T00:00:00') : null;
+  if (from && d < from) return false;
+  if (to && d > to) return false;
+  return true;
+}
+
 function calc(date) {
   const raw = (E[date] || '').trim();
   if (!raw) return { empty: true };
-  
-  const isRmd = S.isRamadan === 'true';
   const out = parseOut(raw);
   if (isNaN(out)) return { bad: true };
-  
+  const ram = isRamadan(date);
   const off = new Date(date + 'T00:00:00').getDay() === +S.offDay;
-  
-  const activeStart = isRmd ? S.ramadanStart : S.start;
-  const activeOTStart = isRmd ? S.ramadanOTStart : S.end; 
-  const activeSnack = isRmd ? +S.ramadanSnack : +S.snack;
-
-  const base = off ? toMin(activeStart) : toMin(activeOTStart);
-  
-  return { ot: roundMin(Math.max(0, out - base)), snack: out >= toMin(S.snackTime) ? (activeSnack || 0) : 0 };
+  const base = off ? (ram ? toMin(S.rStart) : toMin(S.start))
+                   : (ram ? toMin(S.rOTAfter) : toMin(S.end));
+  const snackAt = ram ? toMin(S.rSnackTime) : toMin(S.snackTime);
+  const snackAmt = ram ? (+S.rSnack || 0) : (+S.snack || 0);
+  return { ot: roundMin(Math.max(0, out - base)), snack: out >= snackAt ? snackAmt : 0, ram };
 }
 
 function monthData() {
@@ -307,29 +342,18 @@ function monthData() {
 
 function helpText() {
   const off = +S.offDay;
-  const isRmd = S.isRamadan === 'true';
-  const activeEnd = isRmd ? S.ramadanOTStart : S.end;
-  
-  let text = `Type the time you left. 6.30 means 6:30 PM. After midnight, type 0.30. `;
-  if(isRmd) {
-      text += `(Ramadan Mode: OT starts after Ifter, i.e., ${fmt12(activeEnd)}). `;
-  } else {
-      text += `(Duty ends at ${fmt12(activeEnd)}). `;
-  }
-  
-  text += (off >= 0 ? `On ${FULLDAYS[off]} (weekly off) every hour from duty start counts as overtime. ` : '') + `Press Enter to jump to the next day.`;
-  return text;
+  const ex = +((20 * 60 - toMin(S.start)) / 60).toFixed(2);
+  let txt = 'Type the time you left. 6.30 = 6:30 PM. Type 12 or 0.30 for after midnight (12 AM). ' +
+    (off >= 0 ? `On ${FULLDAYS[off]} (weekly off) every hour from duty start counts as overtime, so 8.00 means ${ex} hours. ` : '');
+  if (S.ramadanMode) txt += `Ramadan ON: duty ${fmt12(S.rStart)}–${fmt12(S.rEnd)}, iftar break till ${fmt12(S.rOTAfter)}, OT after that. `;
+  return txt + 'Press Enter to jump to the next day.';
 }
 
 function render() {
   const mName = view.toLocaleString('en-US', { month: 'long', year: 'numeric' });
   $('monthLbl').textContent = mName;
   $('heroLbl').textContent = 'Total overtime · ' + mName;
-  
-  const isRmd = S.isRamadan === 'true';
-  const activeEnd = isRmd ? S.ramadanOTStart : S.end;
-  $('dutyLbl').textContent = `Duty ${fmt12(isRmd ? S.ramadanStart : S.start)} – ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`;
-  
+  $('dutyLbl').textContent = `Duty ${fmt12(S.start)} – ${fmt12(S.end)}`;
   $('snTime').textContent = fmt12(S.snackTime);
   $('help').textContent = helpText();
 
@@ -337,10 +361,11 @@ function render() {
   const tb = $('tbody'); tb.innerHTML = '';
   monthData().forEach(x => {
     const tr = document.createElement('tr');
-    tr.className = (x.off ? 'off ' : '') + (x.key === todayKey ? 'today' : '');
+    tr.className = (x.off ? 'off ' : '') + (x.key === todayKey ? 'today ' : '') + (x.ram ? 'ram' : '');
     tr.innerHTML = `
       <td class="date"><b>${x.d}</b><span>${DAYS[x.dow]}</span>
         ${x.off ? '<br><span class="badge">Weekly off</span>' : ''}
+        ${x.ram ? '<br><span class="badge rm">Ramadan</span>' : ''}
         ${x.key === todayKey ? '<br><span class="badge td">Today</span>' : ''}</td>
       <td><input inputmode="decimal" autocomplete="off" placeholder="6.30" data-key="${x.key}" value="${esc(x.raw)}"><div class="snk"></div></td>
       <td class="otc"></td>`;
@@ -382,6 +407,7 @@ function updateTotals() {
   $('bars').innerHTML = T.md.map(x => `<i style="height:${(x.ot || 0) / max * 100}%"></i>`).join('');
 }
 
+// ---------- typing ----------
 $('tbody').addEventListener('input', e => {
   const key = e.target.dataset.key; if (!key) return;
   const v = e.target.value.trim();
@@ -396,64 +422,60 @@ $('tbody').addEventListener('keydown', e => {
   if (next) { const i = next.querySelector('input'); i.focus(); i.select(); }
 });
 
-function fillSettings() { 
-  FIELDS.forEach(f => { 
+// ---------- settings ----------
+function fillSettings() {
+  FIELDS.forEach(f => {
     const el = $('s_' + f);
     if (!el) return;
-    if (el.type === 'checkbox') el.checked = (S[f] === 'true');
-    else el.value = S[f] ?? ''; 
-  }); 
-  toggleRamadanUI();
+    if (el.type === 'checkbox') el.checked = !!S[f];
+    else el.value = S[f] ?? '';
+  });
+  $('ramadanBox').style.display = S.ramadanMode ? 'block' : 'none';
 }
-
-function toggleRamadanUI() {
-  const isChecked = $('s_isRamadan').checked;
-  $('ramadanSettings').style.display = isChecked ? 'block' : 'none';
-}
-
 FIELDS.forEach(f => {
-  const el = $('s_' + f);
-  if (!el) return;
-  el.addEventListener('change', ev => {
-    if (el.type === 'checkbox') {
-      S[f] = el.checked ? 'true' : 'false';
-    } else {
-      S[f] = ev.target.value.trim();
-    }
-
-    if (f === 'key') { saveLocal(); pullSync(); return; }
-    if (f === 'isRamadan') toggleRamadanUI();
-
+  $('s_' + f).addEventListener('change', ev => {
+    S[f] = ev.target.type === 'checkbox' ? ev.target.checked : ev.target.value.trim();
+    if (f === 'ramadanMode') $('ramadanBox').style.display = S[f] ? 'block' : 'none';
     settingsDirty = true; settingsVer++;
     if (CALC_FIELDS.includes(f)) Object.keys(E).forEach(k => P[k] = 1);
     saveLocal(); render(); scheduleSync();
   });
 });
 
-window.openSettings = function() {
-    const box = document.getElementById('settingsBox');
-    box.open = true;
-    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setTimeout(() => {
-        const keyInput = document.getElementById('s_key');
-        if(keyInput) keyInput.focus();
-    }, 300);
+// ---------- account / gate ----------
+function openApp() {
+  document.body.classList.remove('locked');
+  $('acctKey').textContent = mask(KEY);
+  fillSettings(); render();
+  pullSync();
 }
+function doLogin() {
+  const k = $('gateKey').value.trim();
+  const err = $('gateErr');
+  if (!DEFAULT_SCRIPT_URL || DEFAULT_SCRIPT_URL.includes('PASTE_YOUR')) {
+    err.textContent = 'Setup needed: script URL is not configured yet.';
+    return;
+  }
+  if (k.length < 4) { err.textContent = 'Key must be at least 4 characters.'; return; }
+  KEY = k; localStorage.setItem(LS.k, KEY);
+  $('gateErr').textContent = '';
+  openApp();
+}
+$('gateBtn').onclick = doLogin;
+$('gateKey').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
+$('logoutBtn').onclick = () => {
+  if (!confirm('Log out?\n\nYour data stays safe in the Google Sheet. To open it again on this device, enter the same key.')) return;
+  ['ot_settings','ot_entries','ot_pending','ot_settings_dirty','ot_key'].forEach(k => localStorage.removeItem(k));
+  location.reload();
+};
+
+// ---------- Google Sheet sync ----------
 let timer = null, syncing = false;
-const canSync = () => !!(S.url && S.key);
+const canSync = () => !!(KEY && DEFAULT_SCRIPT_URL && !DEFAULT_SCRIPT_URL.includes('PASTE_YOUR'));
 function setPill(state, txt) { $('pill').className = 'pill ' + state; $('pillTxt').textContent = txt; }
-
-function idlePill() { 
-    if(!S.key) {
-        setPill('err', '⚠️ Click here to enter your Sync Key'); 
-    } else {
-        setPill('', 'Click here to check connection / settings');
-    }
-}
-
 function scheduleSync() {
-  if (!canSync()) return idlePill();
+  if (!canSync()) { setPill('err', 'Backup not configured'); return; }
   setPill('busy', 'Saving…');
   clearTimeout(timer); timer = setTimeout(pushSync, 1200);
 }
@@ -463,13 +485,13 @@ function entryPayload(key) {
   return { date: key, day: DAYS[new Date(key + 'T00:00:00').getDay()], timeOut: E[key] || '',
            ot: r.ot != null ? +(r.ot / 60).toFixed(2) : '', otText: r.ot ? fmtHM(r.ot) : '', snack: r.snack || 0 };
 }
-function publicSettings() { const { url, key, ...rest } = S; return rest; }
+function publicSettings() { return { ...S }; }
 
 async function api(body) {
-  const res = await fetch(S.url, {
+  const res = await fetch(DEFAULT_SCRIPT_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ ...body, key: S.key })
+    body: JSON.stringify({ ...body, key: KEY })
   });
   const j = await res.json();
   if (!j.ok) throw new Error(j.error || 'Server error');
@@ -477,10 +499,10 @@ async function api(body) {
 }
 
 async function pushSync() {
-  if (!canSync()) return idlePill();
+  if (!canSync()) return;
   if (syncing) { clearTimeout(timer); timer = setTimeout(pushSync, 1000); return; }
   const keys = Object.keys(P);
-  if (!keys.length && !settingsDirty) return setPill('ok', 'Synced with Google Sheet');
+  if (!keys.length && !settingsDirty) return setPill('ok', 'Saved to Google Sheet ✓');
   const sent = {}; keys.forEach(k => sent[k] = E[k] || '');
   const sv = settingsVer, sendSettings = settingsDirty;
   syncing = true; setPill('busy', 'Saving…');
@@ -492,24 +514,24 @@ async function pushSync() {
     setPill('ok', 'Saved to Google Sheet · ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   } catch (err) {
     console.error(err);
-    setPill('err', navigator.onLine ? 'Sync failed – Check key or App Script access' : 'Offline – will sync when online');
+    setPill('err', navigator.onLine ? 'Sync failed – try "Sync now"' : 'Offline – will sync when online');
   } finally { syncing = false; }
 }
 
 async function pullSync() {
-  if (!canSync()) return idlePill();
-  setPill('busy', 'Loading data…');
+  if (!canSync()) { setPill('err', 'Backup not configured'); return; }
+  setPill('busy', 'Loading from Google Sheet…');
   try {
     const j = await api({ action: 'load' });
     const merged = { ...(j.entries || {}) };
     Object.keys(P).forEach(k => { if (E[k]) merged[k] = E[k]; else delete merged[k]; });
     E = merged;
-    if (j.settings && !settingsDirty) { S = { ...S, ...j.settings, url: S.url, key: S.key }; fillSettings(); }
+    if (j.settings && !settingsDirty) { S = { ...DEF, ...j.settings }; fillSettings(); }
     saveLocal(); render();
     await pushSync();
   } catch (err) {
     console.error(err);
-    setPill('err', navigator.onLine ? 'Failed! Check key or Apps Script Deployment' : 'Offline – using saved data');
+    setPill('err', navigator.onLine ? 'Could not load – check key / connection' : 'Offline – using saved data');
   }
 }
 
@@ -519,6 +541,7 @@ document.addEventListener('visibilitychange', () => {
 });
 $('syncNow').onclick = pullSync;
 
+// ---------- month nav ----------
 $('prev').onclick = () => { view.setMonth(view.getMonth() - 1); render(); };
 $('next').onclick = () => { view.setMonth(view.getMonth() + 1); render(); };
 $('todayBtn').onclick = () => {
@@ -531,22 +554,18 @@ $('clearMonth').onclick = () => {
   saveLocal(); render(); scheduleSync();
 };
 
+// ---------- reports ----------
 function reportRows(md) {
-  return md.map(x => [x.key, DAYS[x.dow] + (x.off ? ' (off)' : ''), x.raw,
+  return md.map(x => [x.key, DAYS[x.dow] + (x.off ? ' (off)' : x.ram ? ' (Ramadan)' : ''), x.raw,
     x.ot ? +(x.ot / 60).toFixed(2) : '', x.ot ? fmtHM(x.ot) : '', x.snack || '']);
 }
 
 $('xlsBtn').onclick = () => {
   if (!window.XLSX) return alert('Excel library not loaded. Check your internet and reload.');
   const T = totals(), mName = $('monthLbl').textContent;
-  
-  const isRmd = S.isRamadan === 'true';
-  const activeStart = isRmd ? S.ramadanStart : S.start;
-  const activeEnd = isRmd ? S.ramadanOTStart : S.end;
-  
   const rows = [
     ['Overtime Report', mName], ['Name', S.name], ['Employee ID', S.empId], ['Department', S.dept],
-    ['Duty', `${fmt12(activeStart)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`], [],
+    ['Duty', `${fmt12(S.start)} - ${fmt12(S.end)}`], [],
     ['Date', 'Day', 'Time out', 'Overtime (h)', 'Overtime', 'Snack (SR)'],
     ...reportRows(T.md), [],
     ['Total', '', '', +(T.tot / 60).toFixed(2), fmtHM(T.tot), T.snTot]
@@ -558,133 +577,187 @@ $('xlsBtn').onclick = () => {
   XLSX.writeFile(wb, `Overtime_${mName.replace(' ', '_')}.xlsx`);
 };
 
-// 🚀 নতুন আপডেট করা প্রিমিয়াম PDF ডিজাইন
+/* ============================================================
+   🎨 PREMIUM PDF REPORT
+   ============================================================ */
+const PC = { teal:[31,122,107], dark:[15,70,61], mid:[42,143,126], light:[227,242,239],
+             line:[219,228,226], muted:[124,136,133], ink:[20,32,30], bg:[246,249,248],
+             soft:[159,211,201], soft2:[186,214,209] };
+
+function pText(doc, txt, x, y, opt) { try { doc.text(txt, x, y, opt); } catch (e) { doc.text(txt, x, y); } }
+
+function pClock(doc, cx, cy, r) {
+  doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.5);
+  doc.circle(cx, cy, r, 'S');
+  doc.line(cx, cy, cx, cy - r * 0.58);
+  doc.line(cx, cy, cx + r * 0.46, cy + r * 0.16);
+}
+
+function pHeader(doc, mName) {
+  const M = 14, PW = 210, W = PW - M * 2;
+  doc.setFillColor(...PC.dark); doc.roundedRect(M, 13, W, 31, 4, 4, 'F');
+  doc.setFillColor(...PC.teal); doc.roundedRect(M + 8, 20, 17, 17, 3.5, 3.5, 'F');
+  pClock(doc, M + 16.5, 28.5, 5.4);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(17.5); doc.setTextColor(255, 255, 255);
+  pText(doc, 'OVERTIME REPORT', M + 33, 26.5);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...PC.soft);
+  pText(doc, mName + (S.dept ? '     ·     ' + S.dept : ''), M + 33, 34.5);
+  doc.setFontSize(7.5); doc.setTextColor(...PC.soft2);
+  pText(doc, 'Duty ' + fmt12(S.start) + ' – ' + fmt12(S.end), PW - M - 8, 25, { align: 'right' });
+  pText(doc, S.ramadanMode ? 'Ramadan schedule' : 'Standard schedule', PW - M - 8, 32, { align: 'right' });
+}
+
+function pInfo(doc, y) {
+  const M = 14, PW = 210, W = PW - M * 2;
+  doc.setFillColor(...PC.bg); doc.roundedRect(M, y, W, 24, 3, 3, 'F');
+  const items = [
+    ['EMPLOYEE NAME', S.name || '—'],
+    ['EMPLOYEE ID', S.empId || '—'],
+    ['DEPARTMENT', S.dept || '—'],
+    ['WEEKLY OFF', (+S.offDay >= 0 ? FULLDAYS[+S.offDay] : 'None')],
+    ['OT RATE / HOUR', (S.rate ? S.rate + ' SR' : '—')],
+    ['SNACK / DAY', (S.snack ? S.snack + ' SR' : '—')]
+  ];
+  const colW = W / 3;
+  items.forEach((it, i) => {
+    const cx = M + (i % 3) * colW + 7;
+    const cy = y + 9 + Math.floor(i / 3) * 10.5;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(6.3); doc.setTextColor(...PC.muted);
+    pText(doc, it[0], cx, cy);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...PC.ink);
+    pText(doc, String(it[1]), cx, cy + 5);
+  });
+  return y + 24;
+}
+
+function pCard(doc, x, y, w, h, label, value, accent) {
+  doc.setFillColor(255, 255, 255); doc.setDrawColor(...PC.line); doc.setLineWidth(0.2);
+  doc.roundedRect(x, y, w, h, 2.5, 2.5, 'FD');
+  doc.setFillColor(...(accent ? PC.teal : [198, 212, 210]));
+  doc.rect(x + 0.8, y + 3.2, 1.1, h - 6.4, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(6.3); doc.setTextColor(...PC.muted);
+  pText(doc, label.toUpperCase(), x + 6.5, y + 7.6);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(13.5); doc.setTextColor(...(accent ? PC.teal : PC.ink));
+  pText(doc, String(value), x + 6.5, y + 15.4);
+}
+
+function pContinued(doc, mName) {
+  const M = 14, PW = 210, W = PW - M * 2;
+  doc.setFillColor(...PC.dark); doc.roundedRect(M, 10, W, 12, 3, 3, 'F');
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(255, 255, 255);
+  pText(doc, 'OVERTIME REPORT', M + 6, 17.6);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...PC.soft);
+  pText(doc, mName + '  ·  continued', PW - M - 6, 17.6, { align: 'right' });
+}
+
+function pTotalBox(doc, y, T) {
+  const M = 14, PW = 210, W = PW - M * 2;
+  doc.setFillColor(...PC.dark); doc.roundedRect(M, y, W, 26, 3.5, 3.5, 'F');
+  doc.setFillColor(...PC.teal); doc.roundedRect(M + 7, y + 6, 14, 14, 2.5, 2.5, 'F');
+  pClock(doc, M + 14, y + 13, 4.6);
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(6.8); doc.setTextColor(...PC.soft);
+  pText(doc, 'TOTAL OVERTIME', M + 27, y + 8.5);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(19); doc.setTextColor(255, 255, 255);
+  const bigTxt = fmtH(T.tot) + ' h';
+  pText(doc, bigTxt, M + 27, y + 19);
+  const wBig = doc.getTextWidth(bigTxt);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...PC.soft2);
+  pText(doc, '  (' + fmtHM(T.tot) + ')', M + 27 + wBig + 1, y + 19);
+
+  const rx = PW - M - 7;
+  [['OT PAY', (T.pay || '—') + ' SR'], ['SNACK TOTAL', T.snTot + ' SR'], ['OT DAYS', String(T.otd)]]
+    .forEach((s, i) => {
+      const cx = rx - (2 - i) * 40;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(6.3); doc.setTextColor(...PC.soft);
+      pText(doc, s[0], cx, y + 9, { align: 'right' });
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(255, 255, 255);
+      pText(doc, s[1], cx, y + 18.5, { align: 'right' });
+    });
+  return y + 26;
+}
+
+function pSignatures(doc, y) {
+  const M = 14;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(...PC.muted);
+  pText(doc, 'Overtime is counted from duty end. Snack allowance is paid on any day you leave at or after the snack time.', M, y);
+  const sy = y + 9;
+  doc.setDrawColor(...PC.muted); doc.setLineWidth(0.3);
+  ['Employee Signature', 'Authorized Signature', 'Date'].forEach((b, i) => {
+    const bx = M + i * 64;
+    doc.line(bx, sy, bx + 54, sy);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...PC.muted);
+    pText(doc, b, bx, sy + 5);
+  });
+}
+
 $('pdfBtn').onclick = () => {
   if (!window.jspdf) return alert('PDF library not loaded. Check your internet and reload.');
   const T = totals(), mName = $('monthLbl').textContent;
-  
-  const isRmd = S.isRamadan === 'true';
-  const activeStart = isRmd ? S.ramadanStart : S.start;
-  const activeEnd = isRmd ? S.ramadanOTStart : S.end;
-  
-  const doc = new window.jspdf.jsPDF();
-  
-  // 1. প্রিমিয়াম হেডার ডিজাইন
-  doc.setFillColor(31, 122, 107); // ব্র্যান্ড কালার (Teal)
-  doc.rect(0, 0, 210, 4, 'F'); // উপরে সরু কালার বার
-  
-  doc.setTextColor(31, 122, 107);
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('OVERTIME REPORT', 14, 22);
-  
-  doc.setFontSize(11);
-  doc.setTextColor(100, 100, 100);
-  doc.setFont('helvetica', 'normal');
-  doc.text(mName, 14, 30);
-  
-  doc.setDrawColor(200, 200, 200);
-  doc.line(14, 35, 196, 35); // হেডারের নিচে লাইন
-  
-  // 2. এমপ্লয়ি ইনফরমেশন
-  doc.setTextColor(40, 40, 40);
-  doc.setFontSize(10);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Employee Details:', 14, 45);
-  
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Name: ${S.name || '-'}`, 14, 52);
-  doc.text(`Emp ID: ${S.empId || '-'}`, 14, 59);
-  doc.text(`Department: ${S.dept || '-'}`, 14, 66);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Duty Details:', 120, 45);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Duty: ${fmt12(activeStart)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`, 120, 52);
-  doc.text(`Generated: ${new Date().toLocaleDateString()}`, 120, 59);
-  
-  // 3. ডাটা টেবিল
-  const tableResult = doc.autoTable({
-    startY: 75,
-    head: [['Date', 'Day', 'Time out', 'OT (h)', 'OT', 'Snack (SR)']],
+  const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+  const M = 14, PW = 210, PH = 297, W = PW - M * 2;
+
+  pHeader(doc, mName);
+  let y = pInfo(doc, 48);
+
+  const gap = 4, cw = (W - gap * 2) / 3, ch = 19;
+  y += 5;
+  [['Total overtime', fmtH(T.tot) + ' h', true],
+   ['OT days', String(T.otd), false],
+   ['Avg per OT day', T.otd ? +(T.tot / 60 / T.otd).toFixed(1) + ' h' : '—', false]]
+   .forEach((c, i) => pCard(doc, M + i * (cw + gap), y, cw, ch, c[0], c[1], c[2]));
+  y += ch + gap;
+  [['Snack days', String(T.snDays), false],
+   ['Snack total (SR)', String(T.snTot), false],
+   ['OT pay (SR)', T.pay || '—', false]]
+   .forEach((c, i) => pCard(doc, M + i * (cw + gap), y, cw, ch, c[0], c[1], c[2]));
+  y += ch + 9;
+
+  doc.autoTable({
+    startY: y,
+    head: [['DATE', 'DAY', 'TIME OUT', 'OT (H)', 'OVERTIME', 'SNACK (SR)']],
     body: reportRows(T.md),
-    theme: 'striped', // সুন্দর সাদা-ধূসর স্ট্রাইপ
-    styles: { fontSize: 9, cellPadding: 4, textColor: [50, 50, 50] },
-    headStyles: { fillColor: [31, 122, 107], textColor: 255, fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: [245, 248, 247] },
+    foot: [['MONTH TOTAL', '', '', fmtH(T.tot), fmtHM(T.tot), String(T.snTot)]],
+    theme: 'plain',
+    styles: { fontSize: 8.5, cellPadding: 1.7, textColor: PC.ink, lineColor: PC.line, lineWidth: 0.15, valign: 'middle' },
+    headStyles: { fillColor: PC.teal, textColor: 255, fontStyle: 'bold', fontSize: 7.3, cellPadding: 2.6, halign: 'left' },
+    alternateRowStyles: { fillColor: [247, 250, 249] },
+    footStyles: { fillColor: PC.light, textColor: PC.dark, fontStyle: 'bold', fontSize: 8.5, cellPadding: 2.4 },
     columnStyles: {
-        0: { cellWidth: 30 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 30 },
-        3: { cellWidth: 25, halign: 'right' },
-        4: { cellWidth: 35, halign: 'right' },
-        5: { cellWidth: 40, halign: 'right' }
-    }
+      0: { font: 'courier', halign: 'left' },
+      1: { halign: 'left' },
+      2: { font: 'courier', halign: 'center' },
+      3: { font: 'courier', halign: 'center' },
+      4: { font: 'courier', halign: 'center' },
+      5: { font: 'courier', halign: 'center' }
+    },
+    margin: { left: M, right: M, top: 26, bottom: 28 }
   });
-  
-  // 4. টোটাল সেকশন (নিচে ডানদিকে)
-  let finalY = tableResult.finalY + 15;
-  
-  let boxHeight = T.pay ? 32 : 24;
-  doc.setFillColor(245, 248, 247); // হালকা ব্যাকগ্রাউন্ড
-  doc.setDrawColor(31, 122, 107); // গাঢ় বর্ডার
-  doc.setLineWidth(0.5);
-  doc.roundedRect(115, finalY, 81, boxHeight, 3, 3, 'FD'); // রাউন্ড বক্স
-  
-  doc.setTextColor(31, 122, 107);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text('Report Summary', 120, finalY + 8);
-  
-  doc.setTextColor(40, 40, 40);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  
-  doc.text(`Total OT:`, 120, finalY + 16);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`${fmtH(T.tot)} h (${fmtHM(T.tot)})`, 192, finalY + 16, { align: 'right' });
-  
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Total Snack:`, 120, finalY + 23);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`${T.snTot} SR`, 192, finalY + 23, { align: 'right' });
-  
-  if (T.pay) {
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Total Pay:`, 120, finalY + 30);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${T.pay} SR`, 192, finalY + 30, { align: 'right' });
+
+  let by = doc.lastAutoTable.finalPageY + 10;
+  if (by > PH - 66) { doc.addPage(); by = 28; }
+  by = pTotalBox(doc, by, T);
+  pSignatures(doc, by + 12);
+
+  // ---- footers + continued headers on every page ----
+  const totalPages = doc.internal.getNumberOfPages();
+  const gen = new Date().toLocaleString();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    if (p > 1) pContinued(doc, mName);
+    doc.setDrawColor(...PC.line); doc.setLineWidth(0.2);
+    doc.line(M, PH - 19, PW - M, PH - 19);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.8); doc.setTextColor(...PC.muted);
+    pText(doc, 'Overtime Calculator', M, PH - 14);
+    pText(doc, 'Generated ' + gen, PW / 2, PH - 14, { align: 'center' });
+    pText(doc, 'Page ' + p + ' of ' + totalPages, PW - M, PH - 14, { align: 'right' });
   }
-  
-  // 5. সিগনেচার সেকশন
-  let sigY = finalY + boxHeight + 30;
-  if (sigY > 260) {
-      doc.addPage();
-      sigY = 40;
-  }
-  
-  doc.setDrawColor(150, 150, 150);
-  doc.setLineWidth(0.3);
-  doc.line(20, sigY, 70, sigY);
-  doc.line(135, sigY, 185, sigY);
-  
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text('Employee Signature', 30, sigY + 5);
-  doc.text('Authorized Signature', 145, sigY + 5);
-  
-  // 6. ফুটার
-  doc.setFontSize(8);
-  doc.setTextColor(180, 180, 180);
-  doc.text('Generated by Overtime Calculator', 105, 290, { align: 'center' });
-  
+
   doc.save(`Overtime_${mName.replace(' ', '_')}.pdf`);
 };
 
-fillSettings();
-render();
-if (canSync()) pullSync(); else idlePill();
+// ---------- start ----------
+if (KEY) openApp();
 </script>
 </body>
 </html>
