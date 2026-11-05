@@ -562,7 +562,7 @@ $('xlsBtn').onclick = () => {
   }
 };
 
-// 🚀 আপডেট করা এবং এরর-হ্যান্ডেল করা প্রিমিয়াম PDF ডিজাইন
+// 🚀 এক পেজের ভেতর ফিট করার জন্য আপডেট করা PDF
 $('pdfBtn').onclick = () => {
   try {
     if (!window.jspdf || !window.jspdf.jsPDF) {
@@ -576,49 +576,58 @@ $('pdfBtn').onclick = () => {
     
     const doc = new window.jspdf.jsPDF();
     
-    // 1. প্রিমিয়াম হেডার ডিজাইন
-    doc.setFillColor(31, 122, 107); // ব্র্যান্ড কালার (Teal)
+    // 1. হেডার ডিজাইন (উপরে)
+    doc.setFillColor(31, 122, 107); 
     doc.rect(0, 0, 210, 4, 'F'); 
     
     doc.setTextColor(31, 122, 107);
-    doc.setFontSize(22);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('OVERTIME REPORT', 14, 22);
+    doc.text('OVERTIME REPORT', 14, 16);
     
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.setFont('helvetica', 'normal');
-    doc.text(mName, 14, 30);
+    doc.text(mName, 14, 22);
     
     doc.setDrawColor(200, 200, 200);
-    doc.line(14, 35, 196, 35); 
+    doc.line(14, 25, 196, 25); 
     
-    // 2. এমপ্লয়ি ইনফরমেশন
+    // 2. এমপ্লয়ি ইনফরমেশন (কমপ্যাক্ট করা হয়েছে)
     doc.setTextColor(40, 40, 40);
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     
     doc.setFont('helvetica', 'bold');
-    doc.text('Employee Details:', 14, 45);
-    
+    doc.text('Employee Details:', 14, 32);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Name: ${String(S.name || '-')}`, 14, 52);
-    doc.text(`Emp ID: ${String(S.empId || '-')}`, 14, 59);
-    doc.text(`Department: ${String(S.dept || '-')}`, 14, 66);
+    doc.text(`Name: ${String(S.name || '-')}`, 14, 38);
+    doc.text(`Emp ID: ${String(S.empId || '-')}`, 14, 44);
+    doc.text(`Department: ${String(S.dept || '-')}`, 14, 50);
     
     doc.setFont('helvetica', 'bold');
-    doc.text('Duty Details:', 120, 45);
+    doc.text('Duty Details:', 120, 32);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Duty: ${fmt12(activeStart)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`, 120, 52);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 120, 59);
+    doc.text(`Duty: ${fmt12(activeStart)} - ${fmt12(activeEnd)} ${isRmd ? '(Ramadan)' : ''}`, 120, 38);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 120, 44);
     
-    // 3. ডাটা টেবিল
+    // 3. ডাটা টেবিল (ফন্ট সাইজ ছোট এবং প্যাডিং কমিয়ে এক পেজে ফিট করা হয়েছে)
     doc.autoTable({
-      startY: 75,
+      startY: 56,
       head: [['Date', 'Day', 'Time out', 'OT (h)', 'OT', 'Snack (SR)']],
       body: reportRows(T.md),
       theme: 'striped', 
-      styles: { fontSize: 9, cellPadding: 4, textColor: [50, 50, 50] },
-      headStyles: { fillColor: [31, 122, 107], textColor: 255, fontStyle: 'bold' },
+      styles: { 
+        fontSize: 7,       // ফন্ট ছোট করা হয়েছে
+        cellPadding: 1.2,  // ঘরের ভেতরের ফাঁকা জায়গা কমানো হয়েছে
+        textColor: [50, 50, 50] 
+      },
+      headStyles: { 
+        fillColor: [31, 122, 107], 
+        textColor: 255, 
+        fontStyle: 'bold',
+        fontSize: 7.5,
+        cellPadding: 1.5
+      },
       alternateRowStyles: { fillColor: [245, 248, 247] },
       columnStyles: {
           0: { cellWidth: 30 },
@@ -627,65 +636,63 @@ $('pdfBtn').onclick = () => {
           3: { cellWidth: 25, halign: 'right' },
           4: { cellWidth: 35, halign: 'right' },
           5: { cellWidth: 40, halign: 'right' }
-      }
+      },
+      pageBreak: 'avoid' // পেজ ব্রেক হওয়া বন্ধ করা হয়েছে
     });
     
     // 4. টোটাল সেকশন (নিচে ডানদিকে)
-    let finalY = doc.lastAutoTable.finalY + 15;
+    let finalY = doc.lastAutoTable.finalY + 5;
     
-    let boxHeight = T.pay ? 32 : 24;
+    // যদি ডাটা খুব বেশি হয়ে নিচে চলে যায়, তবে বক্সটি একটু উপরে তুলে আনা হবে
+    if(finalY > 240) finalY = 240; 
+    
+    let boxHeight = T.pay ? 22 : 16;
     doc.setFillColor(245, 248, 247);
     doc.setDrawColor(31, 122, 107); 
-    doc.setLineWidth(0.5);
-    // TypeError ফিক্স: এখানে doc.lastAutoTable.finalY সঠিকভাবে ব্যবহার করা হয়েছে
-    doc.roundedRect(115, finalY, 81, boxHeight, 3, 3, 'FD');
+    doc.setLineWidth(0.3);
+    doc.roundedRect(115, finalY, 81, boxHeight, 2, 2, 'FD');
     
     doc.setTextColor(31, 122, 107);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text('Report Summary', 120, finalY + 8);
+    doc.setFontSize(9);
+    doc.text('Report Summary', 118, finalY + 6);
     
     doc.setTextColor(40, 40, 40);
-    doc.setFontSize(10);
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     
-    doc.text(`Total OT:`, 120, finalY + 16);
+    doc.text(`Total OT:`, 118, finalY + 12);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${fmtH(T.tot)} h (${fmtHM(T.tot)})`, 192, finalY + 16, { align: 'right' });
+    doc.text(`${fmtH(T.tot)} h (${fmtHM(T.tot)})`, 192, finalY + 12, { align: 'right' });
     
     doc.setFont('helvetica', 'normal');
-    doc.text(`Total Snack:`, 120, finalY + 23);
+    doc.text(`Total Snack:`, 118, finalY + 18);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${T.snTot} SR`, 192, finalY + 23, { align: 'right' });
+    doc.text(`${T.snTot} SR`, 192, finalY + 18, { align: 'right' });
     
     if (T.pay) {
         doc.setFont('helvetica', 'normal');
-        doc.text(`Total Pay:`, 120, finalY + 30);
+        doc.text(`Total Pay:`, 118, finalY + 24);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${T.pay} SR`, 192, finalY + 30, { align: 'right' });
+        doc.text(`${T.pay} SR`, 192, finalY + 24, { align: 'right' });
     }
     
-    // 5. সিগনেচার সেকশন
-    let sigY = finalY + boxHeight + 30;
-    if (sigY > 260) {
-        doc.addPage();
-        sigY = 40;
-    }
-    
+    // 5. সিগনেচার সেকশন (এক পেজের ভেতর ফিক্সড নিচে থাকবে)
+    let sigY = 260;
     doc.setDrawColor(150, 150, 150);
     doc.setLineWidth(0.3);
     doc.line(20, sigY, 70, sigY);
     doc.line(135, sigY, 185, sigY);
     
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     doc.text('Employee Signature', 30, sigY + 5);
     doc.text('Authorized Signature', 145, sigY + 5);
     
     // 6. ফুটার
-    doc.setFontSize(8);
-    doc.setTextColor(180, 180, 180);
-    doc.text('Generated by Overtime Calculator', 105, 290, { align: 'center' });
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Generated by Overtime Calculator', 105, 285, { align: 'center' });
     
     // সেভ করা
     doc.save(`Overtime_${mName.replace(' ', '_')}.pdf`);
