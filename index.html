@@ -6,7 +6,6 @@
 <title>Overtime Calculator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-<!-- লাইব্রেরি লিঙ্ক আপডেট করা হয়েছে -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -613,7 +612,7 @@ $('pdfBtn').onclick = () => {
     doc.text(`Generated: ${new Date().toLocaleDateString()}`, 120, 59);
     
     // 3. ডাটা টেবিল
-    const tableResult = doc.autoTable({
+    doc.autoTable({
       startY: 75,
       head: [['Date', 'Day', 'Time out', 'OT (h)', 'OT', 'Snack (SR)']],
       body: reportRows(T.md),
@@ -632,12 +631,13 @@ $('pdfBtn').onclick = () => {
     });
     
     // 4. টোটাল সেকশন (নিচে ডানদিকে)
-    let finalY = tableResult.finalY + 15;
+    let finalY = doc.lastAutoTable.finalY + 15;
     
     let boxHeight = T.pay ? 32 : 24;
     doc.setFillColor(245, 248, 247);
     doc.setDrawColor(31, 122, 107); 
     doc.setLineWidth(0.5);
+    // TypeError ফিক্স: এখানে doc.lastAutoTable.finalY সঠিকভাবে ব্যবহার করা হয়েছে
     doc.roundedRect(115, finalY, 81, boxHeight, 3, 3, 'FD');
     
     doc.setTextColor(31, 122, 107);
@@ -692,7 +692,7 @@ $('pdfBtn').onclick = () => {
     
   } catch (err) {
     console.error("PDF Generation Error: ", err);
-    alert("PDF তৈরি করতে সমস্যা হচ্ছে। দয়া করে ইন্টারনেট চেক করে পেজটি রিফ্রেশ করুন।\nError: " + err.message);
+    alert("PDF তৈরি করতে সমস্যা হচ্ছে।\nError: " + err.message);
   }
 };
 
